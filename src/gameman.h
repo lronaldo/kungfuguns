@@ -25,3 +25,5 @@
 ///////////////////////////////////////////////////////////////
 void GM_initialize();
 void GM_getUserInput();
+void GM_update();
+void GM_draw();

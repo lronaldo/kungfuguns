@@ -46,7 +46,7 @@ void GM_initialize() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// GM_userInput
+/// GM_getUserInput
 ///   Gets user input and transforms it into actions
 ///////////////////////////////////////////////////////////////
 void GM_getUserInput() {
@@ -69,3 +69,24 @@ void GM_getUserInput() {
    hero->nextAction = nextAction;
 }
 
+///////////////////////////////////////////////////////////////
+/// GM_update
+///   Updates the state of the game
+///////////////////////////////////////////////////////////////
+void GM_update() {
+   GM_getUserInput();
+   EM_updateEntities();  
+}
+
+///////////////////////////////////////////////////////////////
+/// GM_draw
+///   Draws next frame of the game under execution
+///////////////////////////////////////////////////////////////
+void GM_draw() {
+   cpct_setBorder(HW_RED);
+   EM_clearEntities();
+   cpct_setBorder(HW_GREEN);
+   EM_drawEntities();
+   cpct_setBorder(HW_BLACK);
+   EM_clearDrawEntityBuffer();
+}

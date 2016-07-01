@@ -42,14 +42,8 @@ void main(void) {
 
    // Loop forever
    while (1) {
-      GM_getUserInput();
-      EM_updateEntities();
+      GM_update();
       cpct_waitVSYNC();
-      cpct_setBorder(HW_RED);
-      EM_clearEntities();
-      cpct_setBorder(HW_GREEN);
-      EM_drawEntities();
-      cpct_setBorder(HW_BLACK);
-      EM_clearDrawEntityBuffer();
+      GM_draw();
    }
 }
