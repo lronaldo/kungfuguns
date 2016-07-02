@@ -27,7 +27,7 @@
 u8* const princess_sps[8] = { g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
 u8* const agent0_sps[8]   = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
 
-void initialize() {
+void initCPC() {
    cpct_disableFirmware();
    cpct_setPalette(g_palette, 16);
    cpct_setVideoMode(0);
@@ -37,8 +37,11 @@ void initialize() {
 }
 
 void main(void) {
-   initialize();
+   // Set up new location for the stack (to use 0x8000-0xBFFF as backbuffer)
+   cpct_setStackLocation(0x8000);
 
+   // Initialize
+   initCPC();
    GM_initialize();
 
    // Loop forever
