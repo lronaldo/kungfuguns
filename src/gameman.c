@@ -19,6 +19,7 @@
 #include <cpctelera.h>
 #include "gameman.h"
 #include "entityman.h"
+#include "levelman.h"
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -42,6 +43,10 @@ TEntity *hero;
 void GM_initialize() {
    // Initialize entity manager and create hero
    EM_initialize();
+   LM_initialize();
+
+   LM_draw();
+   
    hero = EM_createEntity(10, 95, E_Princess);
 }
 
@@ -75,7 +80,8 @@ void GM_getUserInput() {
 ///////////////////////////////////////////////////////////////
 void GM_update() {
    GM_getUserInput();
-   EM_updateEntities();  
+   EM_update();
+   LM_update();
 }
 
 ///////////////////////////////////////////////////////////////
@@ -84,9 +90,9 @@ void GM_update() {
 ///////////////////////////////////////////////////////////////
 void GM_draw() {
    cpct_setBorder(HW_RED);
-   EM_clearEntities();
+   EM_clear();
    cpct_setBorder(HW_GREEN);
-   EM_drawEntities();
+   EM_draw();
    cpct_setBorder(HW_BLACK);
    EM_clearDrawEntityBuffer();
 }

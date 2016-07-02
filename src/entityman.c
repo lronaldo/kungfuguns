@@ -18,12 +18,10 @@
 
 #include <cpctelera.h>
 #include "entityman.h"
+#include "levelman.h"
 #include "sprites/princess.h"
 #include "sprites/agent0.h"
 #include "sprites/spritesets.h"
-#include "levels/level0.h"
-#include "tiles/tileset0.h"
-#include "tiles/tileset1.h"
 
 // Print transparency mask table
 cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
@@ -64,13 +62,6 @@ u8 m_nEnt;     // Num of active entities
 u8 m_nextEnt;  // Next entity id for allocation
 u8 m_nEnt2Draw;// Num of entities to be drawn
 
-// Tilesets
-u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tileset0_03, g_tileset0_04, g_tileset0_05, g_tileset0_06, g_tileset0_07, g_tileset0_08, g_tileset0_09, g_tileset0_10, g_tileset0_11, g_tileset0_12, g_tileset0_13, g_tileset0_14, g_tileset0_15};
-u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
-
-// Background splitted into 2 parts
-u8 g_bg[2][20*17];
-
 ///////////////////////////////////////////////////////////////
 /// EM_pointToNextFreeEntitySlot
 ///   Points to the next free entity slot (if there is one)
@@ -99,79 +90,13 @@ void EM_drawEntity(TEntity *e) {
 ///////////////////////////////////////////////////////////////
 #define SCR_P1 cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
 #define SCR_P2 cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
+
+///////////////////////////////////////////////////////////////
+/// EM_clearEntity
+///   Clears an entity redrawing background over it
+///////////////////////////////////////////////////////////////
 void EM_clearEntity(TEntity *e) {
-   u8 h_up, h_down, h_start;
-   // Check if I'm ocluding the wall
-   if (e->oy < 108) {
-      // General calculations
-      u8 tx1, tx2, tw1 = 0, tw2 = 0;
-      u8 ty = (e->oy - 40) >> 2;
-      u8 tw = (e->w >> 1) + (e->ox & 1);
-      h_up = 108 - e->oy;
-      h_down = e->h - h_up;
-      h_start = 108;
-      h_up = (h_up >> 2) + (h_up & 3 ? 1 : 0);
-
-      // Check which walls I am ocluding
-      if (e->ox < 40 - e->w) {
-         tx1 = e->ox >> 1;
-         tw1 = tw;
-      } else if (e->ox >= 40) {
-         tx2 = (e->ox - 40) >> 1;
-         tw2 = tw;
-      } else {
-         tx1 = e->ox >> 1;
-         tx2 = 0;
-         tw1 = 20 - tx1;
-         tw2 = tw - tw1;
-      }
-
-      // Redraw walls
-      if (tw1) {
-         cpct_etm_setTileset2x4(g_tileset0);
-         cpct_etm_drawTileBox2x4(tx1, ty, tw1, h_up, 20, SCR_P1, g_bg[0]);
-      }
-      if (tw2) {
-         cpct_etm_setTileset2x4(g_tileset1);
-         cpct_etm_drawTileBox2x4(tx2, ty, tw2, h_up, 20, SCR_P2, g_bg[1]);
-      }
-   } else {
-      h_up = 0;
-      h_down = e->h;
-      h_start = e->oy;
-   }
-
-   if (h_down) {
-      u8* scr = cpct_getScreenPtr(CPCT_VMEM_START, e->ox, h_start);
-      cpct_drawSolidBox(scr, 0x33, e->w, h_down);
-   }
-}
-
-///////////////////////////////////////////////////////////////
-/// fillBG
-///   Fills in the background with some level tiles
-///////////////////////////////////////////////////////////////
-void fillBg(u8* lev, u8* bg, u16 idx) {
-   u8 i, j;
-   for(i=0; i < 17;i++) {
-      for(j=0; j < 20;j++) {
-         *bg = cpct_get4Bits(lev, idx);
-         bg++;
-         idx++;
-      }
-      idx += 320 - 20;
-   }
-}
-
-///////////////////////////////////////////////////////////////
-/// drawBg
-///   Draws the background completely
-///////////////////////////////////////////////////////////////
-void drawBg() {
-   cpct_etm_setTileset2x4(g_tileset0);
-   cpct_etm_drawTilemap2x4 (20, 17, SCR_P1, g_bg[0]);
-   cpct_etm_setTileset2x4(g_tileset1);
-   cpct_etm_drawTilemap2x4 (20, 17, SCR_P2, g_bg[1]);
+   LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -192,10 +117,10 @@ void EM_clearDrawEntityBuffer() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_drawEntities
+/// EM_draw
 ///   Draws all entities in the draw list
 ///////////////////////////////////////////////////////////////
-void EM_drawEntities() {
+void EM_draw() {
    u8 i;
    TEntity **e = m_entinties2Draw;
 
@@ -206,11 +131,11 @@ void EM_drawEntities() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_clearEntities
+/// EM_clear
 ///   Clears all entities that must be redrawn leaving the 
 ///   background in their place.
 ///////////////////////////////////////////////////////////////
-void EM_clearEntities() {
+void EM_clear() {
    u8 i;
    TEntity **e = m_entinties2Draw;
 
@@ -221,10 +146,10 @@ void EM_clearEntities() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_updateEntities
+/// EM_update
 ///   Updates all entities (performs their actions)
 ///////////////////////////////////////////////////////////////
-void EM_updateEntities() {
+void EM_update() {
    TEntity *e = m_entities;
    u8 i;
 
@@ -259,15 +184,6 @@ void EM_initialize() {
    m_nEnt      = 0;
    m_nextEnt   = 0;
    m_nEnt2Draw = 0;
-
-   // TODO: Remove (temporal test code)
-#define SCR_FL1 cpctm_screenPtr(CPCT_VMEM_START,  0, 108)
-#define SCR_FL2 cpctm_screenPtr(CPCT_VMEM_START, 40, 108)
-   fillBg(g_level0, g_bg[0],  0);
-   fillBg(g_level0, g_bg[1], 20);
-   drawBg();
-   cpct_drawSolidBox(SCR_FL1, 0x33, 40, 92);
-   cpct_drawSolidBox(SCR_FL2, 0x33, 40, 92);
 } 
 
 ///////////////////////////////////////////////////////////////

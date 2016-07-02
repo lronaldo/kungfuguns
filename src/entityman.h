@@ -67,9 +67,9 @@ typedef struct {
 ///////////////////////////////////////////////////////////////
 void     EM_initialize();
 TEntity* EM_createEntity(u8 x, u8 y, u8 entType);
-void     EM_updateEntities();
-void     EM_drawEntities();
-void     EM_clearEntities();
+void     EM_update();
+void     EM_draw();
+void     EM_clear();
 void     EM_clearDrawEntityBuffer();
 
 #endif

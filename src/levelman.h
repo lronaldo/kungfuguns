@@ -16,25 +16,14 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 
-#ifndef __SPRITESETS_H__
-#define __SPRITESETS_H__
+#include <types.h>
 
-// Sprite Set definition
-typedef struct {
-   u8    facing[2];  // Each bits stores if sprites are facing left(1) or right(0)
-   u8**  set;        // Pointer to the sprite vector
-} TSpriteSet;
-
-// Sprite set identifiers
-extern u8* const princess_sps[12];
-extern u8* const agent0_sps[6];
-
-// Defines with absolute addresses
-#define princess_sps_add      0xC7D0
-#define princess_sps_add_lo   0xD0
-#define princess_sps_add_hi   0xC7
-#define agent0_sps_add        0xC7E8
-#define agent0_sps_add_lo     0xE8
-#define agent0_sps_add_hi     0xC7
-
-#endif
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/// EXPORTED PUBLIC FUNCTIONS
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+void LM_initialize();
+void LM_update();
+void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h);
+void LM_draw();
