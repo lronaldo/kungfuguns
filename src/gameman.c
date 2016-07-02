@@ -55,7 +55,7 @@ void GM_getUserInput() {
    u8 nextAction = 0;
    
    // Read keyboard and interpret action requested
-   cpct_scanKeyboard_if();
+//   cpct_scanKeyboard_if();
    if (cpct_isKeyPressed(Key_CursorLeft)) {
       nextAction |= A_MoveLeft;
    } else if (cpct_isKeyPressed(Key_CursorRight)) {
