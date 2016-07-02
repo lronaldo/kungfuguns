@@ -22,18 +22,41 @@
 #include "tiles/tileset0.h"
 #include "tiles/tileset1.h"
 
+#define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/// INTERNAL STRUCTURES
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+typedef enum {
+     LS_RedrawBg    = 0x80   // Flag signaling background redraw
+   , LS_RedrawFloor = 0x40   // Flag signaling floor redraw
+} TLevelStatus;
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 /// DATA
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-// Background splitted into 2 parts
-u8 g_bg[2][20*17];
+u8   m_backgroundMaps[2][20*17]; // 2 Tilemaps for present background
+u8*  m_bgMapPtr[2];              // Pointers to the 2 background maps for switching
+u8** m_bgTilPtr[2];              // Pointers to the 2 background tilesets 
+u8   m_levelStatus;              // Flags controlling level status (76543210 > 7-6: redraw Floor, Bg, 1-0: Level number)
+u8*  m_levelMap;                 // Map of the present level
+u16  m_levelOffset;              // Offset of the hero into the level (for scrolling background)
 
 // Tilesets
 u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tileset0_03, g_tileset0_04, g_tileset0_05, g_tileset0_06, g_tileset0_07, g_tileset0_08, g_tileset0_09, g_tileset0_10, g_tileset0_11, g_tileset0_12, g_tileset0_13, g_tileset0_14, g_tileset0_15};
 u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
+
+// Level Tileset Layouts
+u8** const m_levelTilesets[2][16] = {
+     { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
+   , { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
+};
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -45,11 +68,11 @@ u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tiles
 /// fillBG
 ///   Fills in the background with some level tiles
 ///////////////////////////////////////////////////////////////
-void fillBg(u8* lev, u8* bg, u16 idx) {
+void fillBg(u8* bg, u16 idx) {
    u8 i, j;
    for(i=0; i < 17;i++) {
       for(j=0; j < 20;j++) {
-         *bg = cpct_get4Bits(lev, idx);
+         *bg = cpct_get4Bits(m_levelMap, idx);
          bg++;
          idx++;
       }
@@ -61,13 +84,19 @@ void fillBg(u8* lev, u8* bg, u16 idx) {
 /// drawBg
 ///   Draws the background completely
 ///////////////////////////////////////////////////////////////
-#define SCR_P1 cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
-#define SCR_P2 cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
 void drawBg() {
-   cpct_etm_setTileset2x4(g_tileset0);
-   cpct_etm_drawTilemap2x4 (20, 17, SCR_P1, g_bg[0]);
-   cpct_etm_setTileset2x4(g_tileset1);
-   cpct_etm_drawTilemap2x4 (20, 17, SCR_P2, g_bg[1]);
+   u8    *scr = cpctm_screenPtr(CPCT_VMEM_START, 40, 40);
+   u8       i = 2;
+
+   while (i--) {
+      cpct_etm_setTileset2x4  (m_bgTilPtr[i]);
+      cpct_etm_drawTilemap2x4 (20, 17, scr, m_bgMapPtr[i]);
+      scr -= 40;
+//      cpct_etm_setTileset2x4(g_tileset0);
+//      cpct_etm_drawTilemap2x4 (20, 17, SCR_P1, m_bgMapPtr[0]);
+//      cpct_etm_setTileset2x4(g_tileset1);
+//      cpct_etm_drawTilemap2x4 (20, 17, SCR_P2, m_bgMapPtr[1]);
+   }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -103,12 +132,17 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
 
       // Redraw walls
       if (tw1) {
-         cpct_etm_setTileset2x4(g_tileset0);
-         cpct_etm_drawTileBox2x4(tx1, ty, tw1, h_up, 20, SCR_P1, g_bg[0]);
+         cpct_etm_setTileset2x4 (m_bgTilPtr[0]);
+         cpct_etm_drawTileBox2x4(tx1, ty, tw1, h_up, 20
+                                 , cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
+                                 , m_bgMapPtr[0]);
       }
       if (tw2) {
-         cpct_etm_setTileset2x4(g_tileset1);
-         cpct_etm_drawTileBox2x4(tx2, ty, tw2, h_up, 20, SCR_P2, g_bg[1]);
+         cpct_etm_setTileset2x4 (m_bgTilPtr[1]);
+         cpct_etm_drawTileBox2x4(tx2, ty, tw2, h_up, 20
+                                 , cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
+                                 , m_bgMapPtr[1]);
+
       }
    } else {
       // Not ocluding the wall, only terrain
@@ -128,27 +162,71 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
 ///   Initializes the level manager object
 ///////////////////////////////////////////////////////////////
 void LM_initialize() {
-   // TODO: Redesign
-   fillBg(g_level0, g_bg[0],  0);
-   fillBg(g_level0, g_bg[1], 20);
+   // At first, redraw floor and Background is required
+   // And select level 0 (2 LSbits = 0)
+   m_levelStatus  = LS_RedrawFloor | LS_RedrawBg;
+   
+   // Set level, offset and background pointers
+   m_levelMap     = g_level0;
+   m_levelOffset  = 0;
+   m_bgMapPtr[0]  = m_backgroundMaps[0];
+   m_bgMapPtr[1]  = m_backgroundMaps[1];
+   m_bgTilPtr[0]  = m_levelTilesets[0][0];
+   m_bgTilPtr[1]  = m_levelTilesets[0][1];
+
+   // Fill in present background part of the level map
+   fillBg(m_bgMapPtr[0], 0);
+   fillBg(m_bgMapPtr[1], 20);
+}
+
+///////////////////////////////////////////////////////////////
+/// LM_scrollRight
+///   Scrolls map 1 place to the right
+///////////////////////////////////////////////////////////////
+void LM_scrollRight() {
+   // Move right part of the map to the left switching pointers
+   // Then offset the map and fill the right part with new background
+   m_levelOffset++;
+   SWITCH_PTR(m_bgMapPtr[0], m_bgMapPtr[1]);
+   m_bgTilPtr[0] = m_bgTilPtr[1];
+   m_bgTilPtr[1] = m_levelTilesets[m_levelStatus & 3][m_levelOffset+1];
+   fillBg(m_bgMapPtr[1], 20*(m_levelOffset+1));
+
+   // Mark for redrawing
+   m_levelStatus |= LS_RedrawBg;
+
+   // Scroll all entities 40 points left (80 pixels) left
+   EM_scroll(-40);
 }
 
 ///////////////////////////////////////////////////////////////
 /// LM_update
 ///   Updates the state of the level
 ///////////////////////////////////////////////////////////////
-void LM_update() {
+void LM_update(u8 hero_x) {
+   // Check for scroll
+   if (hero_x > 68) {
+      LM_scrollRight();
+   }
 }
 
 ///////////////////////////////////////////////////////////////
 /// LM_draw
 ///   Draws the level and redraws background when required
 ///////////////////////////////////////////////////////////////
-#define SCR_FL1 cpctm_screenPtr(CPCT_VMEM_START,  0, 108)
-#define SCR_FL2 cpctm_screenPtr(CPCT_VMEM_START, 40, 108)
 void LM_draw() {
-   // TODO: Redesign
-   drawBg();
-   cpct_drawSolidBox(SCR_FL1, 0x33, 40, 92);
-   cpct_drawSolidBox(SCR_FL2, 0x33, 40, 92);
+   // Redraw floor when required
+   if (m_levelStatus & LS_RedrawFloor) {
+      cpct_drawSolidBox(cpctm_screenPtr(CPCT_VMEM_START,  0, 108)
+                      , 0x33, 40, 92);
+      cpct_drawSolidBox(cpctm_screenPtr(CPCT_VMEM_START, 40, 108)
+                      , 0x33, 40, 92);
+      m_levelStatus ^= LS_RedrawFloor;
+   }
+   
+   // Redraw Background when required
+   if (m_levelStatus & LS_RedrawBg) {
+      drawBg();
+      m_levelStatus ^= LS_RedrawBg;
+   }
 }

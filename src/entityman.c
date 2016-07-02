@@ -214,3 +214,33 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
 
    return e;
 }
+
+///////////////////////////////////////////////////////////////
+/// EM_moveEntityX
+///   Moves an entity in the X axis leaving it always inside
+///   screen boundaries. Sets it for redraw after moving
+///////////////////////////////////////////////////////////////
+void EM_moveEntityX(TEntity* e, i8 pixels) {
+   e->x += pixels;
+   if (e->x > 80 - e->w) {
+      if (pixels < 0) 
+         e->x = 0;
+      else
+         e->x = 80 - e->w;
+   }
+   EM_addEntity2Draw(e);
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_scroll
+///   Scrolls (moves horizontally) all entities
+///////////////////////////////////////////////////////////////
+void EM_scroll(i8 pixels) {
+   TEntity *e = m_entities;
+   u8 i = m_nEnt;
+
+   while (i > 0) {
+      EM_moveEntityX(e, pixels);
+      i--; e++;
+   }
+}

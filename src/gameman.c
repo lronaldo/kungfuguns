@@ -44,9 +44,6 @@ void GM_initialize() {
    // Initialize entity manager and create hero
    EM_initialize();
    LM_initialize();
-
-   LM_draw();
-   
    hero = EM_createEntity(10, 95, E_Princess);
 }
 
@@ -81,7 +78,7 @@ void GM_getUserInput() {
 void GM_update() {
    GM_getUserInput();
    EM_update();
-   LM_update();
+   LM_update(hero->x);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -89,6 +86,8 @@ void GM_update() {
 ///   Draws next frame of the game under execution
 ///////////////////////////////////////////////////////////////
 void GM_draw() {
+   cpct_setBorder(HW_BLUE);
+   LM_draw();
    cpct_setBorder(HW_RED);
    EM_clear();
    cpct_setBorder(HW_GREEN);

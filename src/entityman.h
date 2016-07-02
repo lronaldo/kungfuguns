@@ -70,6 +70,8 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType);
 void     EM_update();
 void     EM_draw();
 void     EM_clear();
+void     EM_scroll(i8 pixels);
+void     EM_moveEntityX(TEntity* e, i8 pixels);
 void     EM_clearDrawEntityBuffer();
 
 #endif
