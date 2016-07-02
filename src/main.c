@@ -24,8 +24,8 @@
 #include "sprites/spritesets.h"
 
 // TODO: This should be placed over hardware backbuffer as initialization code
-u8* const princess_sps[12] = { g_princess_00, g_princess_01, g_princess_02, g_princess_03, g_princess_04, g_princess_05, g_princess_06, g_princess_07, g_princess_08, g_princess_09, g_princess_10, g_princess_11 };
-u8* const agent0_sps[6]    = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5 };
+u8* const princess_sps[8] = { g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
+u8* const agent0_sps[8]   = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
 
 void initialize() {
    cpct_disableFirmware();

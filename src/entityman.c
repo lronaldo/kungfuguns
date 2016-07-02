@@ -30,8 +30,8 @@ cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
 const u8 k_entityTypes[2][9] = {
    // 0: Princess
    { 
-        0x08                  // Size 16x27 px, 8x27 bytes 
-      , 0x1B              
+        0x06                  // Size 12x28 px, 6x28 bytes 
+      , 0x1C              
       , princess_sps_add_lo   // Pointer to princess_sps split into its 2 bytes
       , princess_sps_add_hi
       , princess_sps_add_lo   // Again to point to the first element (same pointer)
@@ -42,8 +42,8 @@ const u8 k_entityTypes[2][9] = {
    }
    // 1: Agent
 ,  { 
-        0x08              // Size 16x27 px, 8x27 bytes 
-      , 0x1B              
+        0x06              // Size 12x28 px, 6x28 bytes 
+      , 0x1C              
       , agent0_sps_add_lo // Pointer to agent_sps split into its 2 bytes
       , agent0_sps_add_hi
       , agent0_sps_add_lo // Again to point to the first element (same pointer)

@@ -205,7 +205,7 @@ void LM_scrollRight() {
 ///////////////////////////////////////////////////////////////
 void LM_update(u8 hero_x) {
    // Check for scroll
-   if (hero_x > 68) {
+   if (hero_x > 68 && m_levelOffset < 14) {
       LM_scrollRight();
    }
 }

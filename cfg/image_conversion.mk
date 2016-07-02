@@ -55,7 +55,7 @@
 ############################################################################
 
 PALETTE={0 1 3 4 7 9 10 12 13 16 19 20 21 24 25 26}
-$(eval $(call IMG2SPRITES,assets/princess.png,0,g,16,27,$(PALETTE),,src/sprites/,hwpalette))
-$(eval $(call IMG2SPRITES,assets/agent0.png,0,g,16,27,$(PALETTE),,src/sprites/))
+$(eval $(call IMG2SPRITES,assets/princess.png,0,g,12,28,$(PALETTE),,src/sprites/,hwpalette))
+$(eval $(call IMG2SPRITES,assets/agent0.png,0,g,12,28,$(PALETTE),,src/sprites/))
 $(eval $(call IMG2SPRITES,assets/tileset0.png,0,g,4,4,$(PALETTE),,src/tiles/))
 $(eval $(call IMG2SPRITES,assets/tileset1.png,0,g,4,4,$(PALETTE),,src/tiles/))

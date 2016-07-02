@@ -26,15 +26,15 @@ typedef struct {
 } TSpriteSet;
 
 // Sprite set identifiers
-extern u8* const princess_sps[12];
-extern u8* const agent0_sps[6];
+extern u8* const princess_sps[8];
+extern u8* const agent0_sps[8];
 
 // Defines with absolute addresses
 #define princess_sps_add      0xC7D0
 #define princess_sps_add_lo   0xD0
 #define princess_sps_add_hi   0xC7
-#define agent0_sps_add        0xC7E8
-#define agent0_sps_add_lo     0xE8
+#define agent0_sps_add        0xC7E0
+#define agent0_sps_add_lo     0xE0
 #define agent0_sps_add_hi     0xC7
 
 #endif
