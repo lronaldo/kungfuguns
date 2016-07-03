@@ -140,10 +140,10 @@ void EM_draw() {
    u8        i = m_nEnt;
 
    while(i) {
-      if ( e->drawt ) {
+//      if ( e->drawt ) {
          EM_drawEntity(e, buf);
-         --e->drawt;
-      }
+//         --e->drawt;
+//      }
       ++e; --i;
    }
 }
@@ -159,7 +159,7 @@ void EM_clear() {
    u8        i = m_nEnt;
 
    while(i) {
-      if ( e->drawt == 2 )
+//      if ( e->drawt == 2 )
          EM_clearEntity(e, buf);
       ++e; --i;
    }
