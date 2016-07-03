@@ -44,3 +44,4 @@
 ############################################################################
 
 $(eval $(call TMX2C,assets/level0.tmx,g_level0,src/levels/,4))
+$(eval $(call TMX2C,assets/level1.tmx,g_level1,src/levels/,4))
