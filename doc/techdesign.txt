@@ -1,0 +1,84 @@
+VERSION DE CPCTELERA:
+======================
+
+  La versión que estoy usando de CPCtelera es una dev-build que podéis bajar aquí:
+  https://github.com/lronaldo/cpctelera/tree/autoaks
+
+  Se puede bajar clonada con git o como un ZIP y descomprimir. Las instrucciones de instalación están aquí:
+  http://lronaldo.github.io/cpctelera/files/readme-txt.html#Installing_CPCtelera
+
+  Con CPCtelera instalada, se puede compilar codeprincess con sólo poner make dentro de su carpeta. El make convierte y buildea todos los assets, así que se puede utilizar como forma de modificar los assets y probar. 
+
+  También recomiendo usar el comando "cpct_winape codeprin.dsk" para lanzar el juego, ya que abre el winape automáticamente y lanza el juego. Así se puede automatizar en un sólo comando el build & run:
+  make && cpct_winape codeprin.dsk
+
+PERSONAJES:
+=============
+  8     sprites por personaje. 
+  12x28 píxeles por sprite.
+  Mismo tamaño por sprite inamobible.
+  Spritesheet:
+  [1 2 3 4]  1-2-3: En espera + caminar
+  [5 6 7 8]  4-5: Preparar golpeo y golpear
+             6: Ser golpeado
+             7-8: libres para otras acciones (disparos?)
+
+  No tengo definido un máximo de personajes, pero calculo que podemos tener 4 o 5 (no se si me dará tiempo a hacer las IAs).
+
+  De momento hay definido el hero y uno que he llamado "agente"
+
+NIVELES Y FONDOS:
+====================
+  De momento, los niveles son 2 y son dos fondos diseñados con Tiled. (level0.tmx y level1.tmx en assets)
+
+  Los fondos tienen un tamaño de 320x17 tiles, divididos en 16 cuadros de 20x17. 
+
+  Cada cuadro de 20x17 puede utilizar un tileset distinto (o reutilizar uno de otro cuadro). 
+
+  Podemos hacer 16 tilesets distintos aunque recomiendo intentar mantenrlo en no más de 8 o 10 para ahorrar espacio.
+
+  Los tiles son de 4x4 píxeles y cada tileset tiene 16 tiles distintos, con este layout:
+  |0 1 2 3|
+  |4 5 6 7|
+  |8 9 A B|
+  |C D E F|
+  
+  Los tilesets están en los ficheros assets/tilesetX.png.
+
+  Para decir qué tileset se usa para cada cuadro de 20x17 hay que hacerlo en código. Ahora se hace en el vector m_levelTilesets en https://github.com/lronaldo/codeprincess/blob/master/src/levelman.c. Seguramente lo movere al fichero de inicialización para poder aprovechar espacios en memoria.
+
+  Una vez esté decidido, si se me pasa una lista, lo pongo en un plis.
+
+GOLPEOS Y DISPAROS
+====================
+  Como los sprites tienen todos el mismo tamaño, los golpeos requieren sprites adicionales. Son tratados como si fueran entidades independientes y se crean al golpear. Para hacer un puñetazo o patada, habrá que crear un sprite independiente que se dibujará pegado al personaje. De momento, hay un ejemplo en hit.png, aunque es una especie de arco de energía, por ser más fácil de poner.
+
+  La segunda opción es disparar cosas como bolas de energía, balas o similares. Esto también es sencillo de hacer.
+
+  Cuando un enemigo es golpeado, se desplaza un poco hacia atrás en la posición de golpeado. Si muere, de momento desaparece (no creo que haya tiempo para florituras, aunque molaría hacer un efecto de desvanecimiento).
+
+
+PALETA:
+=============
+  Una paleta de 16 colores para todo el juego
+
+  (Puede usarse otra distinta para la pantalla de carga, pero sólo para eso)
+
+  La paleta está definida en cfg/image_conversion.mk
+
+  Los 27 colores del CPC, junto con sus números firmware (los que se usan para definir la paleta en cfg/image_conversion.mk) están aquí:
+  http://www.cpcwiki.eu/index.php/CPC_Palette
+
+  El color 0 se usa siempre como transparente en los sprites (no tiene pq ser negro, pero debe ser el color con índice 0).
+
+
+MUSICA:
+=============
+   De momento sólo hay una música integrada pero cuesta muy poco integrar más (se autoconvierten). De todas formas, el espacio que he dejado para músicas es de unos 2K. Con suerte, si al final vamos bien, igual podemos ampliar a 3 o 4K. 
+
+   La música en formato AKS (de Arkos Tracker) se convierte a binario y se carga en la posición 0x200. De hecho, la música se puede cambiar en ejecución cambiando el binario en la posición 0x200 si se exporta desde Arkos tracker un binario para esa posición de memoria, sin recompilar (con cuidado, eso sí, de no cargarse cosas más allá de lo que ocupa la música)
+
+   Los instrumentos de la música se usarán también para hacer efectos de sonido. Los efectos hay que hacerlos por código, usando la función cpct_akp_SFXPlay que está descrita aquí:
+   http://lronaldo.github.io/cpctelera/files/audio/arkostracker-s.html#cpct_akp_SFXPlay
+
+   Los FX se mezclan automáticamente con la música que esté sonando, sin interrumpir canales. Eso sí, a veces la mezcla puede quedar rara según lo que se mezcle.
