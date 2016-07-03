@@ -45,7 +45,8 @@ typedef enum {
 
 // Entity Types
 typedef enum {
-     T_Princess  = 0x01
+     T_Destroyed = 0x00
+   , T_Princess  = 0x01
    , T_Agent     = 0x02
    , T_HitBow    = 0x04
 } TEntityType;
@@ -58,7 +59,7 @@ typedef struct Entity {
    TEntityType  type;     // Type of entity
    u8**        spriteset; // Set of sprites
    u8          t;         // Time in this state
-   u8          energy;    // Energy this entity carries (may be life or hit strength)
+   i8          energy;    // Energy this entity carries (may be life or hit strength)
    u8*         sprite;    // Sprite currently being drawn
    u8          nextAction;// Next action to be performed
    void (*fstate)(struct Entity *e);    // Entity state function 
@@ -79,5 +80,6 @@ void     EM_moveEntityX(TEntity* e, i8 pixels);
 void     EM_scroll(i8 pixels);
 void     EM_addEntity2Draw(TEntity *e2d);
 void     EM_clearDrawEntityBuffer();
+void     EM_deleteEntity(TEntity *e);
 
 #endif

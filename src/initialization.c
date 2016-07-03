@@ -41,6 +41,7 @@ void initCPC() {
    // Set Palette and videomode
    cpct_setPalette(g_palette, 16);
    cpct_setVideoMode(0);
+   cpct_setBorder(HW_BLACK);
 
    // Initialize Music
    cpct_akp_musicInit(g_renegremix);

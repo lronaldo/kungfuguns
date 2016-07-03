@@ -52,10 +52,10 @@ void GM_initialize() {
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
 void GM_update() {
-   cpct_setBorder(HW_MAGENTA);
+//   cpct_setBorder(HW_MAGENTA);
    EM_update();
    LM_update(hero->x);
-   cpct_setBorder(HW_BLACK);
+//   cpct_setBorder(HW_BLACK);
 }
 
 ///////////////////////////////////////////////////////////////

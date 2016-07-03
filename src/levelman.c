@@ -112,7 +112,7 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
       u8 ty   = (y - 40) >> 2;
       u8 tw   = (w >> 1) + (x & 1);
       h_up    = 108 - y;
-      h_down  = h - h_up;
+      h_down  = (h_up > h) ? 0 : h - h_up;
       h_start = 108;
       h_up    = (h_up >> 2) + (h_up & 3 ? 1 : 0);
 

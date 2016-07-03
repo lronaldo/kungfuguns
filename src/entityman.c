@@ -59,7 +59,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
       , T_HitBow              // Type of entity: Hit Bow
       , heroAttack_sps_add_lo // Attack has only 1 sprite (no spriteset)
       , heroAttack_sps_add_hi
-      , 0x00                  // t=0
+      , 0x03                  // t=3 frames
       , 0x03                  // Energy = 3
    }
 };
@@ -69,17 +69,21 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 TEntity  m_entities[MAX_ENTITIES];
 TEntity *m_entities2Draw[MAX_ENTITIES];
 u8 m_nEnt;     // Num of active entities
+u8 m_nDelEnt;  // Deleted entities counter
 u8 m_nEnt2Draw;// Num of entities to be drawn
 u8 m_nFrame;   // Update frame counter
 
 ///////////////////////////////////////////////////////////////
 /// EM_drawEntity
-///   Draws an entity on the screen
+///   Draws an entity on the screen (only if they are not 
+///   destroyed, type = 0)
 ///////////////////////////////////////////////////////////////
 void EM_drawEntity(TEntity *e) {
-   u8 *scr;
-   scr = cpct_getScreenPtr(CPCT_VMEM_START, e->x, e->y);
-   cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
+   if (e->type) {
+      u8 *scr;
+      scr = cpct_getScreenPtr(CPCT_VMEM_START, e->x, e->y);
+      cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
+   }
 }
 
 ///////////////////////////////////////////////////////////////
@@ -201,25 +205,56 @@ void EM_processAI(TEntity *e) {
 }
 
 ///////////////////////////////////////////////////////////////
+/// EM_freeDeletedEntities
+///   Frees space that deleted entities take
+///////////////////////////////////////////////////////////////
+void EM_freeDeletedEntities() {
+   TEntity *e    = m_entities + 1;
+   TEntity *last = m_entities + m_nEnt - 1;
+   u8       i    = m_nDelEnt;
+
+   // Loop until no more entities to delete
+   while (i) {
+      if ( e->type == T_Destroyed ) {
+         if (e != last)
+            cpct_memcpy(e, last, sizeof(TEntity));
+         --i; --last;
+      }
+      ++e;
+   }
+
+   // Set up remaining entities value
+   m_nEnt   -= m_nDelEnt;
+   m_nDelEnt = 0;
+}
+
+///////////////////////////////////////////////////////////////
 /// EM_update
 ///   Updates all entities (performs their actions)
 ///////////////////////////////////////////////////////////////
 void EM_update() {
-   TEntity *e = m_entities;
-   u8 i = m_nEnt;
-   u8 f = m_nFrame++ & 1;  // A new update frame has passed
+   // First of all, free deleted entities if there are
+   if (m_nDelEnt)
+      EM_freeDeletedEntities();
+   
+   // Then update entities
+   { 
+      TEntity *e = m_entities;
+      u8 i = m_nEnt;
+      u8 f = m_nFrame++ & 1;  // A new update frame has passed
 
-   // Hero updates without checking LOD (hero is always entity 0)
-   goto heroupdatefirst;
+      // Hero updates without checking LOD (hero is always entity 0)
+      goto heroupdatefirst;
 
-   // Update all entities
-   while(i) {
-      // Update half entities depending on frame
-      if ( (i & 1) == f) {
-         heroupdatefirst:
-         e->fstate(e);
+      // Update all entities
+      while(i) {
+         // Update half entities depending on frame
+         if ( (i & 1) == f) {
+            heroupdatefirst:
+            e->fstate(e);
+         }
+         ++e; --i;
       }
-      ++e; --i;
    }
 }
 
@@ -234,6 +269,83 @@ void EM_initialize() {
 } 
 
 ///////////////////////////////////////////////////////////////
+/// EM_S_enter_processAI
+///   An entity returns to the processAI state
+///////////////////////////////////////////////////////////////
+void EM_S_enter_processAI(TEntity *e) {
+   e->sprite = e->spriteset[1];
+   e->fstate = EM_processAI;
+   if (e->energy < 0)
+      EM_deleteEntity(e);
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_S_beingHit
+///   Enters the beingHit state
+///////////////////////////////////////////////////////////////
+void EM_S_beingHit(TEntity *e) {
+   --e->t;
+   if (e->t) {
+      e->nextAction = A_MoveRight;
+      EM_move(e);
+   } else {
+      EM_S_enter_processAI(e);
+   }
+   EM_addEntity2Draw(e);
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_S_enter_beingHit
+///   Enters the beingHit state
+///////////////////////////////////////////////////////////////
+void EM_S_enter_beingHit(TEntity *e, u8 energy) {
+   e->t       = 8;
+   e->energy -= energy;
+   e->sprite  = e->spriteset[4];
+   e->fstate  = EM_S_beingHit;
+   EM_addEntity2Draw(e);
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_deleteEntity
+///   Marks an entity to be destroyed
+///////////////////////////////////////////////////////////////
+void EM_deleteEntity(TEntity *e) {
+   e->type = T_Destroyed;
+   m_nDelEnt++;
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_S_hitEnemy
+///   A Hit Bow checks if it is hitting an enemy or not
+///////////////////////////////////////////////////////////////
+void EM_S_hitEnemy(TEntity *ebow) {
+   TEntity *e = m_entities + 1;
+   u8       i = m_nEnt - 1;
+
+   // Check against all enemies
+   while (i) {
+      // Only for enemies
+      if ( (e->type & T_Agent) && e->fstate != EM_S_beingHit ) {
+         if ( e->y == ebow->y - 2) {
+            if (  e->x > ebow->x - e->w
+               && e->x < ebow->x + ebow->w)
+               EM_S_enter_beingHit(e, ebow->energy);
+         }
+      }
+      --i; ++e;
+   }
+
+   // Always redraw
+   EM_addEntity2Draw(ebow);
+
+   // Count down
+   --ebow->t;
+   if (!ebow->t)
+      EM_deleteEntity(ebow);
+}
+
+///////////////////////////////////////////////////////////////
 /// EM_createEntity
 ///   Creates a new entity
 ///////////////////////////////////////////////////////////////
@@ -242,6 +354,8 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
    
    // Allocate only if there is space left
    if (m_nEnt < MAX_ENTITIES - 1) {
+      void *fsm;
+
       // Get next entity slot
       e = m_entities + m_nEnt;
       m_nEnt++;
@@ -252,9 +366,16 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
       // Initial values for the entity
       cpct_memcpy(&(e->w), k_entityTypes + entityID, NUM_ENTITY_ATTRIBS);
       e->sprite = e->spriteset[1];
-      e->fstate = (m_nEnt == 1) ? EM_S_waitingUserInput : EM_processAI;
       e->x = e->ox = x;
       e->y = e->oy = y;
+
+      // Assign FSM
+      switch(entityID) {
+         case E_Princess: fsm = EM_S_waitingUserInput; break;
+         case E_Agent:    fsm = EM_processAI; break;
+         case E_HitBow:   fsm = EM_S_hitEnemy; break;
+      }
+      e->fstate = fsm;
    }
 
    return e;

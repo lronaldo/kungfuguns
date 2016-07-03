@@ -107,19 +107,13 @@ void EM_S_heroPerformsAttack(TEntity *e) {
 ///   State: hero is waiting for attacking
 ///////////////////////////////////////////////////////////////
 void EM_S_heroSetupAttack(TEntity *e) {
-   if (cpct_isKeyPressed(Key_Space)) {
-      --e->t;
-      if (!e->t) {
-         // Perform attack
-         e->t = 2;
-         e->sprite = e->spriteset[6];
-         e->fstate = EM_S_heroPerformsAttack;
-         EM_addEntity2Draw(e);
-      }
-   } else {
-      // Return to normal state
-      e->fstate = EM_S_waitingUserInput;
-      e->sprite = e->spriteset[1];
+   --e->t;
+   if (!e->t) {
+      // Perform attack
+      e->t = 2;
+      e->sprite = e->spriteset[6];
+      e->fstate = EM_S_heroPerformsAttack;
+      EM_createEntity(e->x + 7, e->y + 2, E_HitBow);
       EM_addEntity2Draw(e);
    }
 }
