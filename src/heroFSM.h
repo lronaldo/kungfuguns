@@ -16,13 +16,21 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 
+#ifndef __HERO_H__
+#define __HERO_H__
+
 #include <types.h>
+#include "entityman.h"
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 /// EXPORTED PUBLIC FUNCTIONS
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-void GM_initialize();
-void GM_update();
-void GM_draw();
+void EM_checkUserArrows(TEntity* e);
+void EM_S_waitingUserInput(TEntity* e);
+void EM_S_heroSetupAttack(TEntity* e);
+void EM_S_walking(TEntity* e);
+void EM_S_heroPerformsAttack(TEntity* e);
+
+#endif

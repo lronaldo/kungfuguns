@@ -20,6 +20,7 @@
 #include "entityman.h"
 #include "gameman.h"
 #include "levelman.h"
+#include "heroFSM.h"
 #include "sprites/princess.h"
 #include "sprites/agent0.h"
 #include "sprites/hit.h"
@@ -29,38 +30,35 @@
 cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
 
 // Entity types
-#define NUM_ENTITY_ATTRIBS 8
+#define NUM_ENTITY_ATTRIBS 7
 const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
    // 0: Princess
    { 
         0x06                  // Size 12x28 px, 6x28 bytes 
       , 0x1C              
+      , T_Princess            // Type of entity: princess
       , princess_sps_add_lo   // Pointer to princess_sps split into its 2 bytes
       , princess_sps_add_hi
-      , 0x00                  // Pointer to the current sprite
-      , 0x00
       , 0x00                  // t=0
       , 0x64                  // Energy = 100
    }
    // 1: Agent
 ,  { 
         0x06              // Size 12x28 px, 6x28 bytes 
-      , 0x1C              
+      , 0x1C
+      , T_Agent           // Type of entity: agent
       , agent0_sps_add_lo // Pointer to agent_sps split into its 2 bytes
       , agent0_sps_add_hi
-      , 0x00              // Pointer to the current sprite
-      , 0x00
       , 0x00              // t=0
       , 0x09              // Energy = 9
    }
-   // 2: Hero attack
+   // 2: Hit Bow
 ,  { 
         0x04                  // Size 8x14 px, 4x14 bytes 
-      , 0x0E              
+      , 0x0E
+      , T_HitBow              // Type of entity: Hit Bow
       , heroAttack_sps_add_lo // Attack has only 1 sprite (no spriteset)
       , heroAttack_sps_add_hi
-      , 0x00                  // Pointer to the current sprite
-      , 0x00
       , 0x00                  // t=0
       , 0x03                  // Energy = 3
    }
@@ -92,6 +90,10 @@ void EM_drawEntity(TEntity *e) {
 #define SCR_P2 cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
 void EM_clearEntity(TEntity *e) {
    LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h);
+ 
+   // After clearing, previous location does not matter anymore
+   e->ox = e->x;
+   e->oy = e->y;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -151,39 +153,12 @@ void EM_clear() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_checkUserArrows
-///   Checks if the user is pressing arrows and anotates it
-///////////////////////////////////////////////////////////////
-void EM_checkUserArrows(TEntity* e) {
-   u8 nextAction = 0;
-   
-   // Interpret action requested by the user (Keyboard is read on interrupt)
-   if (cpct_isKeyPressed(Key_CursorLeft)) {
-      nextAction |= A_MoveLeft;
-   } else if (cpct_isKeyPressed(Key_CursorRight)) {
-      nextAction |= A_MoveRight;
-   }
-   if (cpct_isKeyPressed(Key_CursorUp)) {
-      nextAction |= A_MoveUp;
-   } else if (cpct_isKeyPressed(Key_CursorDown)) {
-      nextAction |= A_MoveDown;
-   }
-
-   // Set next action for hero
-   e->nextAction = nextAction;
-}
-
-///////////////////////////////////////////////////////////////
 /// EM_move
 ///   Moves an entity in X and Y
 ///////////////////////////////////////////////////////////////
 void EM_move(TEntity *e) {
    u8 a = e->nextAction;
-
-   // Ensure previous movements are cancelled
-   e->ox = e->x;
-   e->oy = e->y;
-   
+  
    // Left - Right
    if (a & A_MoveLeft  && e->x > 0) {
       e->x--; 
@@ -196,93 +171,6 @@ void EM_move(TEntity *e) {
       e->y--; 
    } else if (a & A_MoveDown  && e->y < 200 - e->h) {
       e->y++; 
-   }
-}
-
-
-void EM_S_waitingUserInput(TEntity* e);
-
-///////////////////////////////////////////////////////////////
-/// EM_S_walking
-///   Entity is walking
-///////////////////////////////////////////////////////////////
-#define FRAMES_STEP_WALK   2
-void EM_S_walking(TEntity* e) {
-   EM_checkUserArrows(e);
-   if (e->nextAction) {
-      // Next animation frame
-      u8 ft = ++e->t / FRAMES_STEP_WALK;
-      if (ft >= 3)
-         e->t = FRAMES_STEP_WALK;
-      e->sprite = e->spriteset[ft];
-      EM_move();
-   } else {
-      // Stop walking
-      e->sprite = e->spriteset[1];
-      e->fstate = EM_S_waitingUserInput;
-   }
-   EM_addEntity2Draw(e);
-}
-
-void EM_S_walking(TEntity *e);
-void EM_S_heroSetupAttack(TEntity *e);
-
-///////////////////////////////////////////////////////////////
-/// EM_S_waitingUserInput
-///   Entity is waiting user input to move
-///////////////////////////////////////////////////////////////
-void EM_S_waitingUserInput(TEntity* e) {
-   // Check if user wants to hit
-   if (cpct_isKeyPressed(Key_Space)) {
-      // Start hero attack
-      e->t      = 2;   // 2 frames for set up
-      e->sprite = e->spriteset[5];
-      e->fstate = EM_S_heroSetupAttack;
-      EM_addEntity2Draw(e);
-   } else {
-      // Check if user presses arrows
-      EM_checkUserArrows();
-      if (e->nextAction) {
-         e->t      = FRAMES_STEP_WALK - 1;
-         e->fstate = EM_S_walking;
-         EM_S_walking(e);
-      }
-   }
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_S_heroPerformsAttack
-///   State: hero is performing its attack
-///////////////////////////////////////////////////////////////
-void EM_S_heroPerformsAttack(TEntity *e) {
-   --e->t;
-   if (!e->t) {
-      // Return to normal state
-      e->fstate = EM_S_waitingUserInput;
-      e->sprite = e->spriteset[1];
-      EM_addEntity2Draw(e);     
-   }
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_S_heroSetupAttack
-///   State: hero is waiting for attacking
-///////////////////////////////////////////////////////////////
-void EM_S_heroSetupAttack(TEntity *e) {
-   if (cpct_isKeyPressed(Key_Space)) {
-      --e->t;
-      if (!e->t) {
-         // Perform attack
-         e->t = 2;
-         e->sprite = e->spriteset[6];
-         e->fstate = EM_S_heroPerformsAttack;
-         EM_addEntity2Draw(e);
-      }
-   } else {
-      // Return to normal state
-      e->fstate = EM_S_waitingUserInput;
-      e->sprite = e->spriteset[1];
-      EM_addEntity2Draw(e);
    }
 }
 
@@ -349,7 +237,7 @@ void EM_initialize() {
 /// EM_createEntity
 ///   Creates a new entity
 ///////////////////////////////////////////////////////////////
-TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
+TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
    TEntity *e = 0;
    
    // Allocate only if there is space left
@@ -362,7 +250,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
       EM_addEntity2Draw(e);
       
       // Initial values for the entity
-      cpct_memcpy(&(e->w), k_entityTypes + entType, NUM_ENTITY_ATTRIBS);
+      cpct_memcpy(&(e->w), k_entityTypes + entityID, NUM_ENTITY_ATTRIBS);
       e->sprite = e->spriteset[1];
       e->fstate = (m_nEnt == 1) ? EM_S_waitingUserInput : EM_processAI;
       e->x = e->ox = x;
@@ -378,13 +266,20 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
 ///   screen boundaries. Sets it for redraw after moving
 ///////////////////////////////////////////////////////////////
 void EM_moveEntityX(TEntity* e, i8 pixels) {
-   e->x += pixels;
-   if (e->x > 80 - e->w) {
+   // Calculations
+   u8 limit = 80 - e->w;
+   u8 nx    = e->x + pixels;
+
+   // Ensure boundaries
+   if (nx > limit) {
       if (pixels < 0) 
-         e->x = 0;
+         nx = 0;
       else
-         e->x = 80 - e->w;
+         nx = limit;
    }
+
+   // Move entity
+   e->x = nx;
    EM_addEntity2Draw(e);
 }
 

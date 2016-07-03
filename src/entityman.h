@@ -36,22 +36,31 @@ typedef enum {
    , A_HitAttack = 0x10
 } TEntityActions;
 
-// Entity Types
+// Entity Identifiers
 typedef enum {
      E_Princess  = 0x00
    , E_Agent     = 0x01
-} TEntityTypes;
+   , E_HitBow    = 0x02
+} TEntityIDs;
+
+// Entity Types
+typedef enum {
+     T_Princess  = 0x01
+   , T_Agent     = 0x02
+   , T_HitBow    = 0x04
+} TEntityType;
 
 // Entity definition
 typedef struct Entity {
-   u8    x, y;      // Location
-   u8   ox, oy;     // Previous location
-   u8    w, h;      // Width-height
-   u8**  spriteset; // Set of sprites
-   u8*   sprite;    // Concrete sprite
-   u8    nextAction;// Next action to be performed
-   u8    t;         // Time in this status
-   u8    energy;    // Energy this entity carries (may be life or hit strength)
+   u8           x, y;     // Location
+   u8         ox, oy;     // Previous location
+   u8           w, h;     // Width-height
+   TEntityType  type;     // Type of entity
+   u8**        spriteset; // Set of sprites
+   u8          t;         // Time in this state
+   u8          energy;    // Energy this entity carries (may be life or hit strength)
+   u8*         sprite;    // Sprite currently being drawn
+   u8          nextAction;// Next action to be performed
    void (*fstate)(struct Entity *e);    // Entity state function 
 } TEntity;
 
@@ -65,8 +74,10 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType);
 void     EM_update();
 void     EM_draw();
 void     EM_clear();
-void     EM_scroll(i8 pixels);
+void     EM_move(TEntity *e);
 void     EM_moveEntityX(TEntity* e, i8 pixels);
+void     EM_scroll(i8 pixels);
+void     EM_addEntity2Draw(TEntity *e2d);
 void     EM_clearDrawEntityBuffer();
 
 #endif
