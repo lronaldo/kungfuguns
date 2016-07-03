@@ -57,7 +57,7 @@ const u8 k_entityTypes[2][NUM_ENTITY_ATTRIBS] = {
 // Entities
 #define MAX_ENTITIES 8
 TEntity  m_entities[MAX_ENTITIES];
-TEntity *m_entinties2Draw[MAX_ENTITIES];
+TEntity *m_entities2Draw[MAX_ENTITIES];
 u8 m_nEnt;     // Num of active entities
 u8 m_nEnt2Draw;// Num of entities to be drawn
 
@@ -83,10 +83,20 @@ void EM_clearEntity(TEntity *e) {
 
 ///////////////////////////////////////////////////////////////
 /// EM_addEntity2Draw
-///   Adds an entity to the draw list
+///   Adds an entity to the draw list (if it is not there already)
 ///////////////////////////////////////////////////////////////
-void EM_addEntity2Draw(TEntity *e) {
-   m_entinties2Draw[m_nEnt2Draw] = e;
+void EM_addEntity2Draw(TEntity *e2d) {
+   TEntity **e = m_entities2Draw;
+   u8        i = m_nEnt2Draw;
+
+   // Check if the entity is already there
+   while (i) {
+      if (*e == e2d)
+         return;
+      --i; ++e;
+   }
+   // Entity is not in the buffer, add it
+   *e = e2d;
    m_nEnt2Draw++;
 }
 
@@ -103,7 +113,7 @@ void EM_clearDrawEntityBuffer() {
 ///   Draws all entities in the draw list
 ///////////////////////////////////////////////////////////////
 void EM_draw() {
-   TEntity **e = m_entinties2Draw;
+   TEntity **e = m_entities2Draw;
    u8        i = m_nEnt2Draw;
 
    while(i) {
@@ -118,7 +128,7 @@ void EM_draw() {
 ///   background in their place.
 ///////////////////////////////////////////////////////////////
 void EM_clear() {
-   TEntity **e = m_entinties2Draw;
+   TEntity **e = m_entities2Draw;
    u8        i = m_nEnt2Draw;
 
    while(i) {
