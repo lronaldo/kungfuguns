@@ -94,11 +94,9 @@ void EM_dummy_init() {
 ///   destroyed, type = 0)
 ///////////////////////////////////////////////////////////////
 void EM_drawEntity(TEntity *e, void* buf) {
-   if (e->type) {
-      TPoint* p = e->pos + 2;
-      u8 *scr   = cpct_getScreenPtr(buf, p->x, p->y);
-      cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
-   }
+   TPoint* p = e->pos + 2;
+   u8 *scr   = cpct_getScreenPtr(buf, p->x, p->y);
+   cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -140,10 +138,10 @@ void EM_draw() {
    u8        i = m_nEnt;
 
    while(i) {
-//      if ( e->drawt ) {
+      if ( e->drawt && e->type) {
          EM_drawEntity(e, buf);
-//         --e->drawt;
-//      }
+         --e->drawt;
+      }
       ++e; --i;
    }
 }
@@ -159,7 +157,7 @@ void EM_clear() {
    u8        i = m_nEnt;
 
    while(i) {
-//      if ( e->drawt == 2 )
+      if ( e->drawt || !e->type )
          EM_clearEntity(e, buf);
       ++e; --i;
    }
@@ -216,27 +214,18 @@ void EM_processAI(TEntity *e) {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_freeDeletedEntities
-///   Frees space that deleted entities take
+/// EM_freeDeletedEntity
+///   Frees space that a deleted entity takes
 ///////////////////////////////////////////////////////////////
-void EM_freeDeletedEntities() {
-   TEntity *e    = m_entities + 1;
+void EM_freeDeletedEntity(TEntity *e) {
    TEntity *last = m_entities + m_nEnt - 1;
-   u8       i    = m_nDelEnt;
 
-   // Loop until no more entities to delete
-   while (i) {
-      if ( e->type == T_Destroyed ) {
-         if (e != last)
-            cpct_memcpy(e, last, sizeof(TEntity));
-         --i; --last;
-      }
-      ++e;
-   }
+   // Free the entity overwritting it with the last one
+   if (e != last)
+      cpct_memcpy(e, last, sizeof(TEntity));
 
    // Set up remaining entities value
-   m_nEnt   -= m_nDelEnt;
-   m_nDelEnt = 0;
+   m_nEnt--;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -244,29 +233,33 @@ void EM_freeDeletedEntities() {
 ///   Updates all entities (performs their actions)
 ///////////////////////////////////////////////////////////////
 void EM_update() {
-   // First of all, free deleted entities if there are
-   if (m_nDelEnt)
-      EM_freeDeletedEntities();
-   
-   // Then update entities
-   { 
-      TEntity *e = m_entities;
-      u8 i = m_nEnt;
-      u8 f = m_nFrame++ & 1;  // A new update frame has passed
+   TEntity *e = m_entities;
+   u8 i = m_nEnt;
+   u8 f = m_nFrame++ & 1;  // A new update frame has passed
 
-      // Hero updates without checking LOD (hero is always entity 0)
-      goto heroupdatefirst;
+   // Hero updates without checking LOD (hero is always entity 0)
+   goto heroupdatefirst;
 
-      // Update all entities
-      while(i) {
-         // Update half entities depending on frame
-         if ( (i & 1) == f) {
-            heroupdatefirst:
-            e->fstate(e);
-         }
-         ++e; --i;
+   // Update all entities
+   while(i) {
+      // Update half entities depending on frame
+      if ( (i & 1) == f) {
+         heroupdatefirst:
+         e->fstate(e);
       }
+      ++e; --i;
    }
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_S_waitingDelete
+///   An entity is wainting to be deleted because it has to be
+///   removed from backbuffers
+///////////////////////////////////////////////////////////////
+void EM_S_waitingDelete(TEntity *e) {
+   --e->t;
+   if (!e->t)
+      EM_freeDeletedEntity(e);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -312,8 +305,9 @@ void EM_S_enter_beingHit(TEntity *e, u8 energy) {
 ///   Marks an entity to be destroyed
 ///////////////////////////////////////////////////////////////
 void EM_deleteEntity(TEntity *e) {
-   e->type = T_Destroyed;
-   m_nDelEnt++;
+   e->t      = 2;    // 2 cicles until deleting
+   e->type   = T_Destroyed;
+   e->fstate = EM_S_waitingDelete;
 }
 
 ///////////////////////////////////////////////////////////////

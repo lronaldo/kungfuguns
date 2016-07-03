@@ -52,11 +52,12 @@ void GM_initialize() {
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
 void GM_update() {
-   cpct_setBorder(HW_MAGENTA);
+//   cpct_setBorder(HW_MAGENTA);
    EM_update();
    LM_update(hero->pos[2].x);
    EM_clear();
-   cpct_setBorder(HW_BLACK);
+//   cpct_setBorder(HW_BLACK);
+   cpct_waitVSYNC();
 }
 
 ///////////////////////////////////////////////////////////////
@@ -64,13 +65,9 @@ void GM_update() {
 ///   Draws next frame of the game under execution
 ///////////////////////////////////////////////////////////////
 void GM_draw() {
-//   cpct_setBorder(HW_BLUE);
    LM_draw();
-//   cpct_setBorder(HW_RED);
-//   cpct_setBorder(HW_GREEN);
    EM_draw();
+//   cpct_setBorder(HW_GREEN);
    cpct_waitVSYNC();
    SM_switchScreenBuffers();
-
-//   cpct_setBorder(HW_BLACK);
 }
