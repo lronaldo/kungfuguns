@@ -48,39 +48,14 @@ void GM_initialize() {
 }
 
 ///////////////////////////////////////////////////////////////
-/// GM_getUserInput
-///   Gets user input and transforms it into actions
-///////////////////////////////////////////////////////////////
-void GM_getUserInput(TEntity* e) {
-   u8 nextAction = 0;
-   
-   // Interpret action requested by the user (Keyboard is read on interrupt)
-   if (cpct_isKeyPressed(Key_Space)) {
-      nextAction = A_HitAttack;
-   } else {
-      if (cpct_isKeyPressed(Key_CursorLeft)) {
-         nextAction |= A_MoveLeft;
-      } else if (cpct_isKeyPressed(Key_CursorRight)) {
-         nextAction |= A_MoveRight;
-      }
-      if (cpct_isKeyPressed(Key_CursorUp)) {
-         nextAction |= A_MoveUp;
-      } else if (cpct_isKeyPressed(Key_CursorDown)) {
-         nextAction |= A_MoveDown;
-      }
-   }
-
-   // Set next action for hero
-   e->nextAction = nextAction;
-}
-
-///////////////////////////////////////////////////////////////
 /// GM_update
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
 void GM_update() {
+   cpct_setBorder(HW_MAGENTA);
    EM_update();
    LM_update(hero->x);
+   cpct_setBorder(HW_BLACK);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -88,12 +63,12 @@ void GM_update() {
 ///   Draws next frame of the game under execution
 ///////////////////////////////////////////////////////////////
 void GM_draw() {
-   cpct_setBorder(HW_BLUE);
+//   cpct_setBorder(HW_BLUE);
    LM_draw();
-   cpct_setBorder(HW_RED);
+//   cpct_setBorder(HW_RED);
    EM_clear();
-   cpct_setBorder(HW_GREEN);
+//   cpct_setBorder(HW_GREEN);
    EM_draw();
-   cpct_setBorder(HW_BLACK);
+//   cpct_setBorder(HW_BLACK);
    EM_clearDrawEntityBuffer();
 }

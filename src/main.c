@@ -53,9 +53,7 @@ void interruptHandler() {
          break;
       case 8:
          // Play music
-         cpct_setBorder(HW_BRIGHT_YELLOW);
          playmusic();
-         cpct_setBorder(HW_BLACK);
          break;
       case 12:
          i=0;

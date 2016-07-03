@@ -17,17 +17,19 @@
 //------------------------------------------------------------------------------
 
 #include <cpctelera.h>
-#include "sprites/princess.h"
+#include "sprites/hit.h"
 #include "sprites/agent0.h"
+#include "sprites/princess.h"
 #include "sprites/spritesets.h"
 #include "music/fromscratch.h"
 
 // Locate all this initialization code in the hardware backbuffer area
 CPCT_ABSOLUTE_LOCATION_AREA (0x8000);
 
-// TODO: This should be placed over hardware backbuffer as initialization code
-u8* const princess_sps[8] = { g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
-u8* const agent0_sps[8]   = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
+// Sprite Sets (1st byte contains facing flags)
+u8* const princess_sps[9]   = { (u8*)0x00, g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
+u8* const agent0_sps[9]     = { (u8*)0x00, g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
+u8* const heroAttack_sps[2] = { (u8*)0x00, g_hit };
 
 void interruptHandler();
 
@@ -43,9 +45,10 @@ void initCPC() {
    // Initialize Music
    cpct_akp_musicInit(g_renegremix);
    
-   // Copy agent bytes to their places
-   cpct_memcpy((void*)princess_sps_add, princess_sps, sizeof(princess_sps));
-   cpct_memcpy((void*)  agent0_sps_add,   agent0_sps, sizeof(  agent0_sps));
+   // Copy sprite sets and other to spare video memory
+   cpct_memcpy((void*)  princess_sps_add,   princess_sps, sizeof(  princess_sps));
+   cpct_memcpy((void*)    agent0_sps_add,     agent0_sps, sizeof(    agent0_sps));
+   cpct_memcpy((void*)heroAttack_sps_add, heroAttack_sps, sizeof(heroAttack_sps));
 }
 
 
