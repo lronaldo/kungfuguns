@@ -197,6 +197,9 @@ void LM_scrollRight() {
 
    // Scroll all entities 40 points left (80 pixels) left
    EM_scroll(-40);
+
+   // TEST
+   EM_createEntity(60, 80, E_Agent);
 }
 
 ///////////////////////////////////////////////////////////////

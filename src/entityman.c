@@ -36,7 +36,7 @@ const u8 k_entityTypes[2][9] = {
       , princess_sps_add_hi
       , princess_sps_add_lo   // Again to point to the first element (same pointer)
       , princess_sps_add_hi
-      , S_Active              // Status Active = 1
+      , S_HeroWait            // Hero Waiting
       , 0x00                  // t=0
       , 0x64                  // Energy = 100
    }
@@ -48,7 +48,7 @@ const u8 k_entityTypes[2][9] = {
       , agent0_sps_add_hi
       , agent0_sps_add_lo // Again to point to the first element (same pointer)
       , agent0_sps_add_hi
-      , S_Active          // Status Active = 1
+      , S_AgentWait       // Agent waiting
       , 0x00              // t=0
       , 0x64              // Energy = 100
    }
@@ -59,20 +59,7 @@ const u8 k_entityTypes[2][9] = {
 TEntity  m_entities[MAX_ENTITIES];
 TEntity *m_entinties2Draw[MAX_ENTITIES];
 u8 m_nEnt;     // Num of active entities
-u8 m_nextEnt;  // Next entity id for allocation
 u8 m_nEnt2Draw;// Num of entities to be drawn
-
-///////////////////////////////////////////////////////////////
-/// EM_pointToNextFreeEntitySlot
-///   Points to the next free entity slot (if there is one)
-///////////////////////////////////////////////////////////////
-void EM_pointToNextFreeEntitySlot() {
-   TEntity *e = m_entities + m_nextEnt;
-   do {
-      e++;
-      m_nextEnt++;
-   } while (e->status != S_Void && m_nextEnt < MAX_ENTITIES);
-}
 
 ///////////////////////////////////////////////////////////////
 /// EM_drawEntity
@@ -86,15 +73,10 @@ void EM_drawEntity(TEntity *e) {
 
 ///////////////////////////////////////////////////////////////
 /// EM_clearEntity
-///   Clears an entity off the screen restoring backgrounds
+///   Clears an entity redrawing background over it
 ///////////////////////////////////////////////////////////////
 #define SCR_P1 cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
 #define SCR_P2 cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
-
-///////////////////////////////////////////////////////////////
-/// EM_clearEntity
-///   Clears an entity redrawing background over it
-///////////////////////////////////////////////////////////////
 void EM_clearEntity(TEntity *e) {
    LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h);
 }
@@ -121,12 +103,12 @@ void EM_clearDrawEntityBuffer() {
 ///   Draws all entities in the draw list
 ///////////////////////////////////////////////////////////////
 void EM_draw() {
-   u8 i;
    TEntity **e = m_entinties2Draw;
+   u8        i = m_nEnt2Draw;
 
-   for(i=0; i < m_nEnt2Draw; i++) {
+   while(i) {
       EM_drawEntity(*e);
-      e++;
+      ++e; --i;
    }
 }
 
@@ -136,12 +118,68 @@ void EM_draw() {
 ///   background in their place.
 ///////////////////////////////////////////////////////////////
 void EM_clear() {
-   u8 i;
    TEntity **e = m_entinties2Draw;
+   u8        i = m_nEnt2Draw;
 
-   for(i=0; i < m_nEnt2Draw; i++) {
+   while(i) {
       EM_clearEntity(*e);
-      e++;
+      ++e; --i;
+   }
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_performActions
+///   Perform actions of a given entity
+///////////////////////////////////////////////////////////////
+void EM_performActions(TEntity *e) {
+   u8 a = e->nextAction;
+
+   // Ensure previous movements are cancelled
+   e->ox = e->x;
+   e->oy = e->y;
+   
+   // Possible actions
+   if (a) {
+      EM_addEntity2Draw(e);
+
+      // Left - Right
+      if (a & A_MoveLeft  && e->x > 0) {
+         e->x--; 
+      } else if (a & A_MoveRight && e->x < 80 - e->w) {
+         e->x++; 
+      } 
+
+      // Up - Down
+      if (a & A_MoveUp    && e->y > 108 - e->h) {
+         e->y--; 
+      } else if (a & A_MoveDown  && e->y < 200 - e->h) {
+         e->y++; 
+      }
+   }
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_processAI
+///   Process AI of the entity
+///////////////////////////////////////////////////////////////
+void EM_processAI(TEntity *e) {
+   // Check if this entity is an agent
+   if (e->status == S_AgentWait) {
+      // Get hero
+      TEntity *hero = m_entities;
+      u8 a = 0;
+      
+      // Follow hero
+      if (e->x < hero->x - 7) {
+         a = A_MoveRight;
+      } else if (e->x > hero->x + 7) {
+         a = A_MoveLeft;
+      } else if (e->y < hero->y) {
+         a = A_MoveDown;
+      } else if (e->y > hero->y) {
+         a = A_MoveUp;
+      }
+      e->nextAction = a;
    }
 }
 
@@ -151,28 +189,12 @@ void EM_clear() {
 ///////////////////////////////////////////////////////////////
 void EM_update() {
    TEntity *e = m_entities;
-   u8 i;
+   u8 i = m_nEnt;
 
-   for(i=0; i < m_nEnt; i++) {
-      u8 a = e->nextAction;
-      e->ox = e->x;
-      e->oy = e->y;
-      // Possible actions
-      if (a) {
-         EM_addEntity2Draw(e);
-
-         if (a & A_MoveLeft  && e->x > 0) {
-            e->x--; 
-         } else if (a & A_MoveRight && e->x < 80 - e->w) {
-            e->x++; 
-         } 
-         if (a & A_MoveUp    && e->y > 108 - e->h) {
-            e->y--; 
-         } else if (a & A_MoveDown  && e->y < 200 - e->h) {
-            e->y++; 
-         }
-      }
-      e++;
+   while(i) {
+      EM_processAI(e);
+      EM_performActions(e);
+      ++e; --i;
    }
 }
 
@@ -182,7 +204,6 @@ void EM_update() {
 ///////////////////////////////////////////////////////////////
 void EM_initialize() {
    m_nEnt      = 0;
-   m_nextEnt   = 0;
    m_nEnt2Draw = 0;
 } 
 
@@ -194,13 +215,10 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
    TEntity *e = 0;
    
    // Allocate only if there is space left
-   if (m_nEnt < MAX_ENTITIES) {
+   if (m_nEnt < MAX_ENTITIES - 1) {
       // Get next entity slot
-      e = m_entities + m_nextEnt;
+      e = m_entities + m_nEnt;
       m_nEnt++;
-
-      // Set up for next free entity slot
-      EM_pointToNextFreeEntitySlot();
 
       // Draw the entity on next frame
       EM_addEntity2Draw(e);
@@ -239,8 +257,8 @@ void EM_scroll(i8 pixels) {
    TEntity *e = m_entities;
    u8 i = m_nEnt;
 
-   while (i > 0) {
+   while (i) {
       EM_moveEntityX(e, pixels);
-      i--; e++;
+      ++e; --i;
    }
 }

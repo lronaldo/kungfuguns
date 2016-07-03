@@ -43,8 +43,12 @@ typedef enum {
 
 // Entity Statuses
 typedef enum {
-     S_Void   = 0x00
-   , S_Active = 0x01
+     // Main Character
+     S_HeroWait  = 0x00
+
+     // Enemies
+   , S_AgentWait = 0x80
+   , S_AgentWalk = 0x81
 } TEntityStatus;
 
 // Entity definition
