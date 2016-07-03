@@ -60,6 +60,7 @@ TEntity  m_entities[MAX_ENTITIES];
 TEntity *m_entities2Draw[MAX_ENTITIES];
 u8 m_nEnt;     // Num of active entities
 u8 m_nEnt2Draw;// Num of entities to be drawn
+u8 m_nFrame;   // Update frame counter
 
 ///////////////////////////////////////////////////////////////
 /// EM_drawEntity
@@ -197,10 +198,15 @@ void EM_processAI(TEntity *e) {
 void EM_update() {
    TEntity *e = m_entities;
    u8 i = m_nEnt;
+   u8 f = m_nFrame++ & 1;  // A new update frame has passed
 
+   goto heroupdatefirst;
    while(i) {
-      e->fstate(e);
-      EM_performActions(e);
+      if ( (i & 1) == f) {
+         heroupdatefirst:
+         e->fstate(e);
+         EM_performActions(e);
+      }
       ++e; --i;
    }
 }
@@ -212,6 +218,7 @@ void EM_update() {
 void EM_initialize() {
    m_nEnt      = 0;
    m_nEnt2Draw = 0;
+   m_nFrame    = 0;
 } 
 
 ///////////////////////////////////////////////////////////////

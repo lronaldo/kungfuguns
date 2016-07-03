@@ -42,18 +42,6 @@ typedef enum {
    , E_Agent     = 0x01
 } TEntityTypes;
 
-// Entity Statuses
-typedef enum {
-     // Main Character
-     S_HeroWait         = 0x00
-   , S_HeroPreHitAttack = 0x01
-   , S_HeroHitAttack    = 0x02
-
-     // Enemies
-   , S_AgentWait = 0x80
-   , S_AgentWalk = 0x81
-} TEntityStatus;
-
 // Entity definition
 typedef struct Entity {
    u8    x, y;      // Location

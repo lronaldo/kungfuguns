@@ -79,7 +79,6 @@ void GM_getUserInput(TEntity* e) {
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
 void GM_update() {
-//   GM_getUserInput();
    EM_update();
    LM_update(hero->x);
 }
