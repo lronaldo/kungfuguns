@@ -84,18 +84,14 @@ void fillBg(u8* bg, u16 idx) {
 /// drawBg
 ///   Draws the background completely
 ///////////////////////////////////////////////////////////////
-void drawBg() {
-   u8    *scr = cpctm_screenPtr(CPCT_VMEM_START, 40, 40);
+void drawBg(u8 *buf) {
+   u8    *scr = buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START);
    u8       i = 2;
 
    while (i--) {
       cpct_etm_setTileset2x4  (m_bgTilPtr[i]);
       cpct_etm_drawTilemap2x4 (20, 17, scr, m_bgMapPtr[i]);
       scr -= 40;
-//      cpct_etm_setTileset2x4(g_tileset0);
-//      cpct_etm_drawTilemap2x4 (20, 17, SCR_P1, m_bgMapPtr[0]);
-//      cpct_etm_setTileset2x4(g_tileset1);
-//      cpct_etm_drawTilemap2x4 (20, 17, SCR_P2, m_bgMapPtr[1]);
    }
 }
 
@@ -103,7 +99,7 @@ void drawBg() {
 /// LM_redrawBackgroundBox
 ///   Redraws part of the background as a defined box
 ///////////////////////////////////////////////////////////////
-void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
+void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
    u8 h_up, h_down, h_start;
    // Check if I'm ocluding the wall
    if (y < 108) {
@@ -134,13 +130,13 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
       if (tw1) {
          cpct_etm_setTileset2x4 (m_bgTilPtr[0]);
          cpct_etm_drawTileBox2x4(tx1, ty, tw1, h_up, 20
-                                 , cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
+                                 , buf + (cpctm_screenPtr(CPCT_VMEM_START, 0, 40) - CPCT_VMEM_START)
                                  , m_bgMapPtr[0]);
       }
       if (tw2) {
          cpct_etm_setTileset2x4 (m_bgTilPtr[1]);
          cpct_etm_drawTileBox2x4(tx2, ty, tw2, h_up, 20
-                                 , cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
+                                 , buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START)
                                  , m_bgMapPtr[1]);
 
       }
@@ -152,7 +148,7 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h) {
 
    // Terrain part
    if (h_down) {
-      u8* scr = cpct_getScreenPtr(CPCT_VMEM_START, x, h_start);
+      u8* scr = cpct_getScreenPtr(buf, x, h_start);
       cpct_drawSolidBox(scr, 0x33, w, h_down);
    }
 }
@@ -217,19 +213,28 @@ void LM_update(u8 hero_x) {
 /// LM_draw
 ///   Draws the level and redraws background when required
 ///////////////////////////////////////////////////////////////
+u8* const memplaces[4] = { 
+      cpctm_screenPtr(0x8000,  0, 108)
+   ,  cpctm_screenPtr(0x8000, 40, 108)
+   ,  cpctm_screenPtr(0xC000,  0, 108)
+   ,  cpctm_screenPtr(0xC000, 40, 108)
+};
 void LM_draw() {
    // Redraw floor when required
    if (m_levelStatus & LS_RedrawFloor) {
-      cpct_drawSolidBox(cpctm_screenPtr(CPCT_VMEM_START,  0, 108)
-                      , 0x33, 40, 92);
-      cpct_drawSolidBox(cpctm_screenPtr(CPCT_VMEM_START, 40, 108)
-                      , 0x33, 40, 92);
+      u8     i = 4;
+      u8** scr = memplaces;
+      while (i) {
+         cpct_drawSolidBox(*scr, 0x33, 40, 92);
+         --i; ++scr;
+      }
       m_levelStatus ^= LS_RedrawFloor;
    }
    
    // Redraw Background when required
    if (m_levelStatus & LS_RedrawBg) {
-      drawBg();
+      drawBg((void*)0x8000);
+      drawBg(CPCT_VMEM_START);
       m_levelStatus ^= LS_RedrawBg;
    }
 }

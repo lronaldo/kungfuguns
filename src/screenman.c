@@ -17,10 +17,6 @@
 //------------------------------------------------------------------------------
 
 #include <cpctelera.h>
-#include "gameman.h"
-#include "entityman.h"
-#include "levelman.h"
-#include "screenman.h"
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -28,7 +24,8 @@
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-TEntity *hero;
+extern void* m_backbuffer;
+extern void* m_screenbuffer;
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -36,41 +33,56 @@ TEntity *hero;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-
 ///////////////////////////////////////////////////////////////
-/// GM_initialize
-///   Initializes the game manager object
+/// dummy_init
+///   Dummy function to have preinitialized values
 ///////////////////////////////////////////////////////////////
-void GM_initialize() {
-   // Initialize entity manager and create hero
-   LM_initialize();
-   hero = EM_createEntity(10, 95, E_Princess);
+void dummy_init() __naked {
+   __asm
+      _m_backbuffer::   .dw 0x8000
+      _m_screenbuffer:: .dw 0xC000
+   __endasm;
 }
 
 ///////////////////////////////////////////////////////////////
-/// GM_update
-///   Updates the state of the game
+/// SM_cpc_showBackBuffer
+///   Makes the screen change to the actual hardware backbuffer
 ///////////////////////////////////////////////////////////////
-void GM_update() {
-   cpct_setBorder(HW_MAGENTA);
-   EM_update();
-   LM_update(hero->x);
-   EM_clear();
-   cpct_setBorder(HW_BLACK);
+void SM_cpc_showBackBuffer() {
+   u8 buff;
+
+   if (m_backbuffer == CPCT_VMEM_START) {
+      buff = cpct_pageC0;
+   } else {
+      buff = cpct_page80;
+   }
+
+   cpct_setVideoMemoryPage(buff);
 }
 
 ///////////////////////////////////////////////////////////////
-/// GM_draw
-///   Draws next frame of the game under execution
+/// SM_switchScreenBuffers
+///   switches hardware backbuffer and screen buffer
 ///////////////////////////////////////////////////////////////
-void GM_draw() {
-//   cpct_setBorder(HW_BLUE);
-   LM_draw();
-//   cpct_setBorder(HW_RED);
-//   cpct_setBorder(HW_GREEN);
-   EM_draw();
-   cpct_waitVSYNC();
-   SM_switchScreenBuffers();
+void SM_switchScreenBuffers() {
+   void *aux;
 
-//   cpct_setBorder(HW_BLACK);
+   SM_cpc_showBackBuffer();
+
+   // Switch pointer values
+   aux            = (void*)m_backbuffer;
+   m_backbuffer   = m_screenbuffer;
+   m_screenbuffer = aux;
 }
+
+///////////////////////////////////////////////////////////////
+/// SM_backBuf
+///   returns a pointer to the start of the video memory back buffer
+///////////////////////////////////////////////////////////////
+void* SM_backBuf() { return m_backbuffer; }
+
+///////////////////////////////////////////////////////////////
+/// SM_scrBuf
+///   returns a pointer to the start of the current video memory buffer
+///////////////////////////////////////////////////////////////
+void* SM_scrBuf() { return m_screenbuffer; }

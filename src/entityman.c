@@ -19,6 +19,7 @@
 #include <cpctelera.h>
 #include "entityman.h"
 #include "gameman.h"
+#include "screenman.h"
 #include "levelman.h"
 #include "heroFSM.h"
 #include "sprites/princess.h"
@@ -30,12 +31,13 @@
 cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
 
 // Entity types
-#define NUM_ENTITY_ATTRIBS 7
+#define NUM_ENTITY_ATTRIBS 8
 const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
    // 0: Princess
    { 
         0x06                  // Size 12x28 px, 6x28 bytes 
-      , 0x1C              
+      , 0x1C
+      , 0x02                  // New entity, has to be drawn twice (once per buffer)
       , T_Princess            // Type of entity: princess
       , princess_sps_add_lo   // Pointer to princess_sps split into its 2 bytes
       , princess_sps_add_hi
@@ -46,6 +48,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 ,  { 
         0x06              // Size 12x28 px, 6x28 bytes 
       , 0x1C
+      , 0x02              // New entity, has to be drawn twice (once per buffer)
       , T_Agent           // Type of entity: agent
       , agent0_sps_add_lo // Pointer to agent_sps split into its 2 bytes
       , agent0_sps_add_hi
@@ -56,6 +59,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 ,  { 
         0x04                  // Size 8x14 px, 4x14 bytes 
       , 0x0E
+      , 0x02                  // New entity, has to be drawn twice (once per buffer)
       , T_HitBow              // Type of entity: Hit Bow
       , heroAttack_sps_add_lo // Attack has only 1 sprite (no spriteset)
       , heroAttack_sps_add_hi
@@ -67,21 +71,32 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 // Entities
 #define MAX_ENTITIES 8
 TEntity  m_entities[MAX_ENTITIES];
-TEntity *m_entities2Draw[MAX_ENTITIES];
-u8 m_nEnt;     // Num of active entities
-u8 m_nDelEnt;  // Deleted entities counter
-u8 m_nEnt2Draw;// Num of entities to be drawn
-u8 m_nFrame;   // Update frame counter
+extern u8 m_nEnt;        // Num of active entities
+extern u8 m_nDelEnt;     // Deleted entities counter
+extern u8 m_nFrame;      // Update frame counter
+
+
+///////////////////////////////////////////////////////////////
+/// dummy_init
+///   Statically initialize variables
+///////////////////////////////////////////////////////////////
+void EM_dummy_init() {
+   __asm
+      _m_nEnt::      .db 0
+      _m_nDelEnt::   .db 0
+      _m_nFrame::    .db 0
+   __endasm;
+}
 
 ///////////////////////////////////////////////////////////////
 /// EM_drawEntity
 ///   Draws an entity on the screen (only if they are not 
 ///   destroyed, type = 0)
 ///////////////////////////////////////////////////////////////
-void EM_drawEntity(TEntity *e) {
+void EM_drawEntity(TEntity *e, void* buf) {
    if (e->type) {
       u8 *scr;
-      scr = cpct_getScreenPtr(CPCT_VMEM_START, e->x, e->y);
+      scr = cpct_getScreenPtr(buf, e->x, e->y);
       cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
    }
 }
@@ -90,11 +105,9 @@ void EM_drawEntity(TEntity *e) {
 /// EM_clearEntity
 ///   Clears an entity redrawing background over it
 ///////////////////////////////////////////////////////////////
-#define SCR_P1 cpctm_screenPtr(CPCT_VMEM_START,  0, 40)
-#define SCR_P2 cpctm_screenPtr(CPCT_VMEM_START, 40, 40)
-void EM_clearEntity(TEntity *e) {
-   LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h);
- 
+void EM_clearEntity(TEntity *e, void *buf) {
+   LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h, buf);
+
    // After clearing, previous location does not matter anymore
    e->ox = e->x;
    e->oy = e->y;
@@ -103,40 +116,26 @@ void EM_clearEntity(TEntity *e) {
 ///////////////////////////////////////////////////////////////
 /// EM_addEntity2Draw
 ///   Adds an entity to the draw list (if it is not there already)
+///   of one of the draw buffers for next frames
 ///////////////////////////////////////////////////////////////
 void EM_addEntity2Draw(TEntity *e2d) {
-   TEntity **e = m_entities2Draw;
-   u8        i = m_nEnt2Draw;
-
-   // Check if the entity is already there
-   while (i) {
-      if (*e == e2d)
-         return;
-      --i; ++e;
-   }
-   // Entity is not in the buffer, add it
-   *e = e2d;
-   m_nEnt2Draw++;
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_clearDrawEntityBuffer
-///   Clears the buffer of entities marked to be drawn
-///////////////////////////////////////////////////////////////
-void EM_clearDrawEntityBuffer() {
-   m_nEnt2Draw = 0;
+   e2d->drawt = 2;
 }
 
 ///////////////////////////////////////////////////////////////
 /// EM_draw
-///   Draws all entities in the draw list
+///   Draws all entities in the draw list (in the backbuffer)
 ///////////////////////////////////////////////////////////////
 void EM_draw() {
-   TEntity **e = m_entities2Draw;
-   u8        i = m_nEnt2Draw;
+   TEntity  *e = m_entities;
+   void   *buf = SM_backBuf();
+   u8        i = m_nEnt;
 
    while(i) {
-      EM_drawEntity(*e);
+      if ( e->drawt ) {
+         EM_drawEntity(e, buf);
+         --e->drawt;
+      }
       ++e; --i;
    }
 }
@@ -147,11 +146,13 @@ void EM_draw() {
 ///   background in their place.
 ///////////////////////////////////////////////////////////////
 void EM_clear() {
-   TEntity **e = m_entities2Draw;
-   u8        i = m_nEnt2Draw;
+   TEntity  *e = m_entities;
+   void   *buf = SM_backBuf();
+   u8        i = m_nEnt;
 
    while(i) {
-      EM_clearEntity(*e);
+      if ( e->drawt == 2 )
+         EM_clearEntity(e, buf);
       ++e; --i;
    }
 }
@@ -257,16 +258,6 @@ void EM_update() {
       }
    }
 }
-
-///////////////////////////////////////////////////////////////
-/// EM_initialize
-///   Initialize entity manager
-///////////////////////////////////////////////////////////////
-void EM_initialize() {
-   m_nEnt      = 0;
-   m_nEnt2Draw = 0;
-   m_nFrame    = 0;
-} 
 
 ///////////////////////////////////////////////////////////////
 /// EM_S_enter_processAI

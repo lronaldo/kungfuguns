@@ -16,61 +16,12 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 
-#include <cpctelera.h>
-#include "gameman.h"
-#include "entityman.h"
-#include "initialization.h"
-#include "sprites/princess.h"
-#include "sprites/agent0.h"
-#include "sprites/spritesets.h"
-#include "music/fromscratch.h"
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/// EXPORTED PUBLIC FUNCTIONS
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+void  SM_switchScreenBuffers();
+void* SM_backBuf();
+void* SM_scrBuf();
 
-void playmusic() {
-   __asm 
-      exx
-      .db #0x08
-      push af
-      push bc
-      push de
-      push hl
-      call _cpct_akp_musicPlay
-      pop hl
-      pop de
-      pop bc
-      pop af
-      .db #0x08
-      exx
-   __endasm;
-}
-
-void interruptHandler() {
-   static u8 i;
-
-   i++;
-   switch(i) {
-      case 7: 
-         cpct_scanKeyboard_if();
-         break;
-      case 8:
-         // Play music
-         playmusic();
-         break;
-      case 12:
-         i=0;
-   }
-}
-
-void main(void) {
-   // Set up new location for the stack (to use 0x8000-0xBFFF as backbuffer)
-   cpct_setStackLocation((void*)0x8000);
-
-   // Initialize
-   initCPC();
-   GM_initialize();
-
-   // Loop forever
-   while (1) {
-      GM_update();
-      GM_draw();
-   }
-}

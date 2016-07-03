@@ -56,6 +56,7 @@ typedef struct Entity {
    u8           x, y;     // Location
    u8         ox, oy;     // Previous location
    u8           w, h;     // Width-height
+   u8          drawt;     // Times the entity has still to be drawn
    TEntityType  type;     // Type of entity
    u8**        spriteset; // Set of sprites
    u8          t;         // Time in this state
@@ -79,7 +80,6 @@ void     EM_move(TEntity *e);
 void     EM_moveEntityX(TEntity* e, i8 pixels);
 void     EM_scroll(i8 pixels);
 void     EM_addEntity2Draw(TEntity *e2d);
-void     EM_clearDrawEntityBuffer();
 void     EM_deleteEntity(TEntity *e);
 
 #endif
