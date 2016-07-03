@@ -54,7 +54,7 @@ void GM_initialize() {
 void GM_update() {
    cpct_setBorder(HW_MAGENTA);
    EM_update();
-   LM_update(hero->x);
+   LM_update(hero->pos[2].x);
    EM_clear();
    cpct_setBorder(HW_BLACK);
 }

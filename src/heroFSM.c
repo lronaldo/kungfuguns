@@ -79,7 +79,7 @@ void EM_S_waitingUserInput(TEntity* e) {
       EM_addEntity2Draw(e);
    } else {
       // Check if user presses arrows
-      EM_checkUserArrows();
+      EM_checkUserArrows(e);
       if (e->nextAction) {
          e->t      = FRAMES_STEP_WALK - 1;
          e->fstate = EM_S_walking;
@@ -106,14 +106,16 @@ void EM_S_heroPerformsAttack(TEntity *e) {
 /// EM_S_heroSetupAttack
 ///   State: hero is waiting for attacking
 ///////////////////////////////////////////////////////////////
-void EM_S_heroSetupAttack(TEntity *e) {
+void EM_S_heroSetupAttack(TEntity *e) {  
    --e->t;
-   if (!e->t) {
+   if (!e->t) {     
+      TPoint *p = e->pos + 2;
+
       // Perform attack
       e->t = 2;
       e->sprite = e->spriteset[6];
       e->fstate = EM_S_heroPerformsAttack;
-      EM_createEntity(e->x + 7, e->y + 2, E_HitBow);
+      EM_createEntity(p->x + 7, p->y + 2, E_HitBow);
       EM_addEntity2Draw(e);
    }
 }

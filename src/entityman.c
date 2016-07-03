@@ -95,8 +95,8 @@ void EM_dummy_init() {
 ///////////////////////////////////////////////////////////////
 void EM_drawEntity(TEntity *e, void* buf) {
    if (e->type) {
-      u8 *scr;
-      scr = cpct_getScreenPtr(buf, e->x, e->y);
+      TPoint* p = e->pos + 2;
+      u8 *scr   = cpct_getScreenPtr(buf, p->x, p->y);
       cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
    }
 }
@@ -106,11 +106,19 @@ void EM_drawEntity(TEntity *e, void* buf) {
 ///   Clears an entity redrawing background over it
 ///////////////////////////////////////////////////////////////
 void EM_clearEntity(TEntity *e, void *buf) {
-   LM_redrawBackgroundBox(e->ox, e->oy, e->w, e->h, buf);
+   TPoint* p = e->pos + 0;
+   u8      i = 4;
+   LM_redrawBackgroundBox(p->x, p->y, e->w, e->h, buf);
+
+   *((u32*)p) = *((u32*)(p+1));
 
    // After clearing, previous location does not matter anymore
-   e->ox = e->x;
-   e->oy = e->y;
+   //cpct_memcpy(p, p+1, 2*sizeof(TPoint));
+   
+   //while (i) {
+   //   *((u16*)p) = *((u16*)(p+1));
+   //   ++p; --i;
+   //}
 }
 
 ///////////////////////////////////////////////////////////////
@@ -162,20 +170,21 @@ void EM_clear() {
 ///   Moves an entity in X and Y
 ///////////////////////////////////////////////////////////////
 void EM_move(TEntity *e) {
-   u8 a = e->nextAction;
+   TPoint *p = e->pos + 2;
+   u8      a = e->nextAction;
   
    // Left - Right
-   if (a & A_MoveLeft  && e->x > 0) {
-      e->x--; 
-   } else if (a & A_MoveRight && e->x < 80 - e->w) {
-      e->x++; 
+   if ( (a & A_MoveLeft) && p->x > 0) {
+      p->x--; 
+   } else if ( (a & A_MoveRight) && p->x < 80 - e->w) {
+      p->x++; 
    } 
 
    // Up - Down
-   if (a & A_MoveUp    && e->y > 108 - e->h) {
-      e->y--; 
-   } else if (a & A_MoveDown  && e->y < 200 - e->h) {
-      e->y++; 
+   if ( (a & A_MoveUp) && p->y > 108 - e->h) {
+      p->y--; 
+   } else if ( (a & A_MoveDown) && p->y < 200 - e->h) {
+      p->y++; 
    }
 }
 
@@ -185,17 +194,18 @@ void EM_move(TEntity *e) {
 ///////////////////////////////////////////////////////////////
 void EM_processAI(TEntity *e) {
    // Get hero
-   TEntity *hero = m_entities;
-   u8 a = 0;
+   TPoint *herop = m_entities[0].pos + 2;
+   TPoint     *p = e->pos + 2;
+   u8          a = 0;
    
    // Follow hero
-   if (e->x < hero->x - 7) {
+   if (p->x < herop->x - 7) {
       a = A_MoveRight;
-   } else if (e->x > hero->x + 7) {
+   } else if (p->x > herop->x + 7) {
       a = A_MoveLeft;
-   } else if (e->y < hero->y) {
+   } else if (p->y < herop->y) {
       a = A_MoveDown;
-   } else if (e->y > hero->y) {
+   } else if (p->y > herop->y) {
       a = A_MoveUp;
    }
    if (a) {
@@ -311,16 +321,18 @@ void EM_deleteEntity(TEntity *e) {
 ///   A Hit Bow checks if it is hitting an enemy or not
 ///////////////////////////////////////////////////////////////
 void EM_S_hitEnemy(TEntity *ebow) {
-   TEntity *e = m_entities + 1;
-   u8       i = m_nEnt - 1;
+   TPoint  *pbow = ebow->pos + 2;
+   TEntity *e    = m_entities + 1;
+   u8       i    = m_nEnt - 1;
 
    // Check against all enemies
    while (i) {
+      TPoint  *pe = e->pos + 2;
       // Only for enemies
       if ( (e->type & T_Agent) && e->fstate != EM_S_beingHit ) {
-         if ( e->y == ebow->y - 2) {
-            if (  e->x > ebow->x - e->w
-               && e->x < ebow->x + ebow->w)
+         if ( pe->y == pbow->y - 2) {
+            if (  pe->x > pbow->x - e->w
+               && pe->x < pbow->x + ebow->w)
                EM_S_enter_beingHit(e, ebow->energy);
          }
       }
@@ -346,6 +358,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
    // Allocate only if there is space left
    if (m_nEnt < MAX_ENTITIES - 1) {
       void *fsm;
+      TPoint *p;
 
       // Get next entity slot
       e = m_entities + m_nEnt;
@@ -357,8 +370,10 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
       // Initial values for the entity
       cpct_memcpy(&(e->w), k_entityTypes + entityID, NUM_ENTITY_ATTRIBS);
       e->sprite = e->spriteset[1];
-      e->x = e->ox = x;
-      e->y = e->oy = y;
+      p = e->pos + 0;
+      p->x = x; p->y = y; p++;
+      p->x = x; p->y = y; p++;
+      p->x = x; p->y = y; p++;
 
       // Assign FSM
       switch(entityID) {
@@ -379,8 +394,9 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
 ///////////////////////////////////////////////////////////////
 void EM_moveEntityX(TEntity* e, i8 pixels) {
    // Calculations
-   u8 limit = 80 - e->w;
-   u8 nx    = e->x + pixels;
+   TPoint *p = e->pos + 2;  
+   u8 limit  = 80 - e->w;
+   u8 nx     = p->x + pixels;
 
    // Ensure boundaries
    if (nx > limit) {
@@ -391,7 +407,7 @@ void EM_moveEntityX(TEntity* e, i8 pixels) {
    }
 
    // Move entity
-   e->x = nx;
+   p->x = nx;
    EM_addEntity2Draw(e);
 }
 

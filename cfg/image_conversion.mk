@@ -54,7 +54,7 @@
 ##     $(eval $(call IMG2SPRITES,imgs/1.png,0,g,4,8,$(PAL),,src/))        ##
 ############################################################################
 
-PALETTE={0 1 3 4 7 9 10 12 13 16 19 20 21 24 25 26}
+PALETTE={8 0 18 22 1 2 3 20 6 17 24 15 9 4 13 26}
 $(eval $(call IMG2SPRITES,assets/princess.png,0,g,12,28,$(PALETTE),,src/sprites/,hwpalette))
 $(eval $(call IMG2SPRITES,assets/agent0.png,0,g,12,28,$(PALETTE),,src/sprites/))
 $(eval $(call IMG2SPRITES,assets/hit.png,0,g,8,14,$(PALETTE),,src/sprites/))

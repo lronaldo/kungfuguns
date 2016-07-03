@@ -51,10 +51,14 @@ typedef enum {
    , T_HitBow    = 0x04
 } TEntityType;
 
+// Point
+typedef struct {
+   u8 x, y;
+} TPoint;
+
 // Entity definition
 typedef struct Entity {
-   u8           x, y;     // Location
-   u8         ox, oy;     // Previous location
+   TPoint     pos[3];     // 3 Locations
    u8           w, h;     // Width-height
    u8          drawt;     // Times the entity has still to be drawn
    TEntityType  type;     // Type of entity

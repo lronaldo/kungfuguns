@@ -22,6 +22,8 @@
 #include "tiles/tileset0.h"
 #include "tiles/tileset1.h"
 
+#define BACKGROUNDCOLOR 0xFF
+#define FLOORCOLOR      0x0F
 #define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
 
 ///////////////////////////////////////////////////////////////
@@ -53,7 +55,9 @@ u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tiles
 u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
 
 // Level Tileset Layouts
-u8** const m_levelTilesets[2][16] = {
+#define NLEVELS             2
+#define LEVEL_CHUCKS_SIZE  16
+u8** const m_levelTilesets[NLEVELS][LEVEL_CHUCKS_SIZE] = {
      { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
    , { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
 };
@@ -73,8 +77,7 @@ void fillBg(u8* bg, u16 idx) {
    for(i=0; i < 17;i++) {
       for(j=0; j < 20;j++) {
          *bg = cpct_get4Bits(m_levelMap, idx);
-         bg++;
-         idx++;
+         bg++; idx++;
       }
       idx += 320 - 20;
    }
@@ -88,10 +91,11 @@ void drawBg(u8 *buf) {
    u8    *scr = buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START);
    u8       i = 2;
 
-   while (i--) {
+   while (i) {
+      --i;
       cpct_etm_setTileset2x4  (m_bgTilPtr[i]);
       cpct_etm_drawTilemap2x4 (20, 17, scr, m_bgMapPtr[i]);
-      scr -= 40;
+      scr = scr - 40;
    }
 }
 
@@ -149,7 +153,7 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
    // Terrain part
    if (h_down) {
       u8* scr = cpct_getScreenPtr(buf, x, h_start);
-      cpct_drawSolidBox(scr, 0x33, w, h_down);
+      cpct_drawSolidBox(scr, FLOORCOLOR, w, h_down);
    }
 }
 
@@ -173,6 +177,12 @@ void LM_initialize() {
    // Fill in present background part of the level map
    fillBg(m_bgMapPtr[0], 0);
    fillBg(m_bgMapPtr[1], 20);
+
+   // Clear all video memory
+   cpct_drawSolidBox(CPCT_VMEM_START,      BACKGROUNDCOLOR, 40, 200);
+   cpct_drawSolidBox(CPCT_VMEM_START + 40, BACKGROUNDCOLOR, 40, 200);
+   cpct_drawSolidBox((void*)0x8000,        BACKGROUNDCOLOR, 40, 200);
+   cpct_drawSolidBox((void*)(0x8000 + 40), BACKGROUNDCOLOR, 40, 200);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -225,7 +235,7 @@ void LM_draw() {
       u8     i = 4;
       u8** scr = memplaces;
       while (i) {
-         cpct_drawSolidBox(*scr, 0x33, 40, 92);
+         cpct_drawSolidBox(*scr, FLOORCOLOR, 40, 92);
          --i; ++scr;
       }
       m_levelStatus ^= LS_RedrawFloor;
