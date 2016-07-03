@@ -18,6 +18,7 @@
 
 #include <cpctelera.h>
 #include "entityman.h"
+#include "gameman.h"
 #include "levelman.h"
 #include "sprites/princess.h"
 #include "sprites/agent0.h"
@@ -27,7 +28,8 @@
 cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
 
 // Entity types
-const u8 k_entityTypes[2][9] = {
+#define NUM_ENTITY_ATTRIBS 8
+const u8 k_entityTypes[2][NUM_ENTITY_ATTRIBS] = {
    // 0: Princess
    { 
         0x06                  // Size 12x28 px, 6x28 bytes 
@@ -36,7 +38,6 @@ const u8 k_entityTypes[2][9] = {
       , princess_sps_add_hi
       , princess_sps_add_lo   // Again to point to the first element (same pointer)
       , princess_sps_add_hi
-      , S_HeroWait            // Hero Waiting
       , 0x00                  // t=0
       , 0x64                  // Energy = 100
    }
@@ -48,7 +49,6 @@ const u8 k_entityTypes[2][9] = {
       , agent0_sps_add_hi
       , agent0_sps_add_lo // Again to point to the first element (same pointer)
       , agent0_sps_add_hi
-      , S_AgentWait       // Agent waiting
       , 0x00              // t=0
       , 0x64              // Energy = 100
    }
@@ -163,24 +163,21 @@ void EM_performActions(TEntity *e) {
 ///   Process AI of the entity
 ///////////////////////////////////////////////////////////////
 void EM_processAI(TEntity *e) {
-   // Check if this entity is an agent
-   if (e->status == S_AgentWait) {
-      // Get hero
-      TEntity *hero = m_entities;
-      u8 a = 0;
-      
-      // Follow hero
-      if (e->x < hero->x - 7) {
-         a = A_MoveRight;
-      } else if (e->x > hero->x + 7) {
-         a = A_MoveLeft;
-      } else if (e->y < hero->y) {
-         a = A_MoveDown;
-      } else if (e->y > hero->y) {
-         a = A_MoveUp;
-      }
-      e->nextAction = a;
+   // Get hero
+   TEntity *hero = m_entities;
+   u8 a = 0;
+   
+   // Follow hero
+   if (e->x < hero->x - 7) {
+      a = A_MoveRight;
+   } else if (e->x > hero->x + 7) {
+      a = A_MoveLeft;
+   } else if (e->y < hero->y) {
+      a = A_MoveDown;
+   } else if (e->y > hero->y) {
+      a = A_MoveUp;
    }
+   e->nextAction = a;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -192,7 +189,7 @@ void EM_update() {
    u8 i = m_nEnt;
 
    while(i) {
-      EM_processAI(e);
+      e->fstate(e);
       EM_performActions(e);
       ++e; --i;
    }
@@ -224,8 +221,9 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entType) {
       EM_addEntity2Draw(e);
       
       // Initial values for the entity
-      cpct_memcpy(&(e->w), k_entityTypes + entType, 9);
+      cpct_memcpy(&(e->w), k_entityTypes + entType, NUM_ENTITY_ATTRIBS);
       e->sprite = e->spriteset[0];
+      e->fstate = (m_nEnt == 1) ? GM_getUserInput : EM_processAI;
       e->x = e->ox = x;
       e->y = e->oy = y;
    }

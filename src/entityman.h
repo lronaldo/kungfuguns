@@ -33,6 +33,7 @@ typedef enum {
    , A_MoveRight = 0x02
    , A_MoveUp    = 0x04
    , A_MoveDown  = 0x08
+   , A_HitAttack = 0x10
 } TEntityActions;
 
 // Entity Types
@@ -44,7 +45,9 @@ typedef enum {
 // Entity Statuses
 typedef enum {
      // Main Character
-     S_HeroWait  = 0x00
+     S_HeroWait         = 0x00
+   , S_HeroPreHitAttack = 0x01
+   , S_HeroHitAttack    = 0x02
 
      // Enemies
    , S_AgentWait = 0x80
@@ -52,16 +55,16 @@ typedef enum {
 } TEntityStatus;
 
 // Entity definition
-typedef struct {
-   u8  x, y;      // Location
-   u8 ox, oy;     // Previous location
-   u8  w, h;      // Width-height
-   u8** spriteset;// Set of sprites
-   u8* sprite;    // Concrete sprite
-   u8  status;    // Entity status
-   u8  nextAction;// Next action to be performed
-   u8  t;         // Time in this status
-   u8  energy;    // Energy this entity carries (may be life or hit strength)
+typedef struct Entity {
+   u8    x, y;      // Location
+   u8   ox, oy;     // Previous location
+   u8    w, h;      // Width-height
+   u8**  spriteset; // Set of sprites
+   u8*   sprite;    // Concrete sprite
+   u8    nextAction;// Next action to be performed
+   u8    t;         // Time in this status
+   u8    energy;    // Energy this entity carries (may be life or hit strength)
+   void (*fstate)(struct Entity *e);    // Entity state function 
 } TEntity;
 
 ///////////////////////////////////////////////////////////////

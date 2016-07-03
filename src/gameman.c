@@ -51,24 +51,27 @@ void GM_initialize() {
 /// GM_getUserInput
 ///   Gets user input and transforms it into actions
 ///////////////////////////////////////////////////////////////
-void GM_getUserInput() {
+void GM_getUserInput(TEntity* e) {
    u8 nextAction = 0;
    
-   // Read keyboard and interpret action requested
-//   cpct_scanKeyboard_if();
-   if (cpct_isKeyPressed(Key_CursorLeft)) {
-      nextAction |= A_MoveLeft;
-   } else if (cpct_isKeyPressed(Key_CursorRight)) {
-      nextAction |= A_MoveRight;
-   }
-   if (cpct_isKeyPressed(Key_CursorUp)) {
-      nextAction |= A_MoveUp;
-   } else if (cpct_isKeyPressed(Key_CursorDown)) {
-      nextAction |= A_MoveDown;
+   // Interpret action requested by the user (Keyboard is read on interrupt)
+   if (cpct_isKeyPressed(Key_Space)) {
+      nextAction = A_HitAttack;
+   } else {
+      if (cpct_isKeyPressed(Key_CursorLeft)) {
+         nextAction |= A_MoveLeft;
+      } else if (cpct_isKeyPressed(Key_CursorRight)) {
+         nextAction |= A_MoveRight;
+      }
+      if (cpct_isKeyPressed(Key_CursorUp)) {
+         nextAction |= A_MoveUp;
+      } else if (cpct_isKeyPressed(Key_CursorDown)) {
+         nextAction |= A_MoveDown;
+      }
    }
 
    // Set next action for hero
-   hero->nextAction = nextAction;
+   e->nextAction = nextAction;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -76,7 +79,7 @@ void GM_getUserInput() {
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
 void GM_update() {
-   GM_getUserInput();
+//   GM_getUserInput();
    EM_update();
    LM_update(hero->x);
 }
