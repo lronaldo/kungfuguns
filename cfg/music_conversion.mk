@@ -45,4 +45,4 @@
 ##    required.                                                           ##
 ############################################################################
 
-$(eval $(call AKS2C,assets/fromscratch.aks,g_renegremix,src/music/,0x300))
+$(eval $(call AKS2C,assets/princess7.aks,g_renegremix,src/music/,0x300))

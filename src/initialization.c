@@ -21,7 +21,8 @@
 #include "sprites/agent0.h"
 #include "sprites/princess.h"
 #include "sprites/spritesets.h"
-#include "music/fromscratch.h"
+//#include "music/fromscratch.h"
+#include "music/princess7.h"
 
 // Locate all this initialization code in the hardware backbuffer area
 CPCT_ABSOLUTE_LOCATION_AREA (0x8000);

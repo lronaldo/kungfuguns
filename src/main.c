@@ -18,12 +18,7 @@
 
 #include <cpctelera.h>
 #include "gameman.h"
-#include "entityman.h"
 #include "initialization.h"
-#include "sprites/princess.h"
-#include "sprites/agent0.h"
-#include "sprites/spritesets.h"
-#include "music/fromscratch.h"
 
 void playmusic() {
    __asm 
