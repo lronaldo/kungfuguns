@@ -25,5 +25,6 @@
 ///////////////////////////////////////////////////////////////
 void GM_startmenu();
 void GM_startgame();
-void GM_update();
+void GM_gameOver();
+u8   GM_update();
 void GM_draw();

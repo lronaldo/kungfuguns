@@ -62,8 +62,9 @@ u8 getRand() {
 void GM_startgame() {
    // Initialize entity manager and create hero
    LM_initialize(0);
-   hero = EM_createEntity(10, 95, E_Princess);
+   EM_initialize();
    CM_inititalize(24, 0);
+   hero = EM_createEntity(10, 95, E_Princess);
    hero->energy = 24;
    mgm_level = 0;
 }
@@ -84,7 +85,7 @@ void GM_startmenu () {
 
       cpct_drawStringM0 ("KUNG FU GUNS"
                         ,  cpctm_screenPtr(CPCT_VMEM_START, 13, 70)
-                        ,  getRand() & 0x03 + 3, 1);
+                        ,  15, 1);
 
       cpct_drawStringM0 ("PRESS ANY KEY"
                         ,  cpctm_screenPtr(CPCT_VMEM_START, 12, 140)
@@ -99,11 +100,28 @@ void GM_startmenu () {
 }
 
 ///////////////////////////////////////////////////////////////
+/// GM_gameOver
+///   Initializes the menu
+///////////////////////////////////////////////////////////////
+void GM_gameOver() {
+   u16 c = 1500;  // 30 secs
+
+   while (--c) {
+      cpct_drawStringM0 ("GAME OVER"
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 20, 70)
+                        ,  c & 0x0F, 1);
+      if (cpct_isAnyKeyPressed())
+         return;
+      cpct_waitVSYNC();
+   }
+}
+
+///////////////////////////////////////////////////////////////
 /// GM_nextLevel
 ///   Advance to the next level
 ///////////////////////////////////////////////////////////////
 void GM_nextLevel() {
-   ++mgm_level;
+   mgm_level = (mgm_level + 1) & 1; 
    EM_leaveOnlyHero(10, 95);
    LM_initialize(mgm_level);
 }
@@ -112,7 +130,7 @@ void GM_nextLevel() {
 /// GM_update
 ///   Updates the state of the game
 ///////////////////////////////////////////////////////////////
-void GM_update() {
+u8 GM_update() {
    if (LM_isLevelFinished() || cpct_isKeyPressed(Key_G)) 
       GM_nextLevel();
 //   cpct_setBorder(HW_MAGENTA);
@@ -122,6 +140,8 @@ void GM_update() {
    CM_draw();
 //   cpct_setBorder(HW_BLACK);
    cpct_waitVSYNC();
+
+   return CM_getLife();
 }
 
 ///////////////////////////////////////////////////////////////

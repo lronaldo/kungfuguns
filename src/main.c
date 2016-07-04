@@ -62,13 +62,16 @@ void main(void) {
    // Initialize
    initCPC();
    while (1) {
+      u8 cont;
       GM_startmenu();
       GM_startgame();
 
-      // Loop forever
-      while (1) {
-         GM_update();
+      // Loop while game runs
+      do {
+         cont = GM_update();
          GM_draw();
-      }
+      } while (cont);
+
+      GM_gameOver();
    }
 }
