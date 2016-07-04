@@ -21,8 +21,10 @@
 #include "levels/level0.h"
 #include "tiles/tileset0.h"
 #include "tiles/tileset1.h"
+#include "tiles/tileset2.h"
+#include "tiles/tileset3.h"
 
-#define BACKGROUNDCOLOR       0xFF
+#define BACKGROUNDCOLOR       0xC0
 #define FLOORCOLOR            0x0F
 #define ENEMIES_LOCK_SCROLL      3
 #define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
@@ -43,6 +45,7 @@ typedef enum {
 
 typedef struct {
    u8*       map;
+   u8 floorcolor;
    u8** tilesets[LEVEL_CHUCKS_SIZE];
 } TLevelData;
 
@@ -64,6 +67,8 @@ TLevelData *m_level;             // Pointer to the current level
 // Tilesets
 u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tileset0_03, g_tileset0_04, g_tileset0_05, g_tileset0_06, g_tileset0_07, g_tileset0_08, g_tileset0_09, g_tileset0_10, g_tileset0_11, g_tileset0_12, g_tileset0_13, g_tileset0_14, g_tileset0_15};
 u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
+u8* const g_tileset2[16] = {g_tileset2_00, g_tileset2_01, g_tileset2_02, g_tileset2_03, g_tileset2_04, g_tileset2_05, g_tileset2_06, g_tileset2_07, g_tileset2_08, g_tileset2_09, g_tileset2_10, g_tileset2_11, g_tileset2_12, g_tileset2_13, g_tileset2_14, g_tileset2_15};
+u8* const g_tileset3[16] = {g_tileset3_00, g_tileset3_01, g_tileset3_02, g_tileset3_03, g_tileset3_04, g_tileset3_05, g_tileset3_06, g_tileset3_07, g_tileset3_08, g_tileset3_09, g_tileset3_10, g_tileset3_11, g_tileset3_12, g_tileset3_13, g_tileset3_14, g_tileset3_15};
 
 extern TLevelData m_levels[NLEVELS];
 
@@ -73,16 +78,18 @@ void LM_dummy_init() __naked {
    _m_levels::
    // LEVEL 0
       .dw   _g_level0    // map / tilesets
+      .db   0x0F         // floorcolor
       .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0 
       .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0
       .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0
       .dw   _g_tileset0, _g_tileset0, _g_tileset1, _g_tileset1
    // LEVEL 1
       .dw   _g_level1    // map / tilesets
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1 
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .db   0x33         // floorcolor
+      .dw   _g_tileset3, _g_tileset2, _g_tileset3, _g_tileset2
+      .dw   _g_tileset3, _g_tileset2, _g_tileset3, _g_tileset2
+      .dw   _g_tileset3, _g_tileset2, _g_tileset3, _g_tileset2
+      .dw   _g_tileset3, _g_tileset2, _g_tileset3, _g_tileset2
    __endasm;
 }
 
@@ -179,7 +186,7 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
    // Terrain part
    if (h_down) {
       u8* scr = cpct_getScreenPtr(buf, x, h_start);
-      cpct_drawSolidBox(scr, FLOORCOLOR, w, h_down);
+      cpct_drawSolidBox(scr, m_level->floorcolor, w, h_down);
    }
 }
 
@@ -292,7 +299,7 @@ void LM_draw() {
       u8     i = 4;
       u8** scr = memplaces;
       while (i) {
-         cpct_drawSolidBox(*scr, FLOORCOLOR, 40, 92);
+         cpct_drawSolidBox(*scr, m_level->floorcolor, 40, 92);
          --i; ++scr;
       }
       m_levelStatus ^= LS_RedrawFloor;
