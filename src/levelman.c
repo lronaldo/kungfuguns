@@ -22,8 +22,9 @@
 #include "tiles/tileset0.h"
 #include "tiles/tileset1.h"
 
-#define BACKGROUNDCOLOR 0xFF
-#define FLOORCOLOR      0x0F
+#define BACKGROUNDCOLOR       0xFF
+#define FLOORCOLOR            0x0F
+#define ENEMIES_LOCK_SCROLL      3
 #define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
 
 ///////////////////////////////////////////////////////////////
@@ -35,6 +36,7 @@
 typedef enum {
      LS_RedrawBg    = 0x80   // Flag signaling background redraw
    , LS_RedrawFloor = 0x40   // Flag signaling floor redraw
+   , LS_ScrollLock  = 0x04   // Flag for locking scroll
 } TLevelStatus;
 
 ///////////////////////////////////////////////////////////////
@@ -46,7 +48,7 @@ typedef enum {
 u8   m_backgroundMaps[2][20*17]; // 2 Tilemaps for present background
 u8*  m_bgMapPtr[2];              // Pointers to the 2 background maps for switching
 u8** m_bgTilPtr[2];              // Pointers to the 2 background tilesets 
-u8   m_levelStatus;              // Flags controlling level status (76543210 > 7-6: redraw Floor, Bg, 1-0: Level number)
+u8   m_levelStatus;              // Flags controlling level status (76543210 > 7-6: redraw Floor, Bg, 1-0: Level number, 2: scroll_lock)
 u8*  m_levelMap;                 // Map of the present level
 u16  m_levelOffset;              // Offset of the hero into the level (for scrolling background)
 
@@ -213,9 +215,18 @@ void LM_scrollRight() {
 ///   Updates the state of the level
 ///////////////////////////////////////////////////////////////
 void LM_update(u8 hero_x) {
+   u8 nEnem = EM_getNumEnemies();
+
    // Check for scroll
-   if (hero_x > 68 && m_levelOffset < 14) {
-      LM_scrollRight();
+   if (m_levelStatus & LS_ScrollLock) {
+      if (!nEnem)
+         m_levelStatus &= ~LS_ScrollLock;
+   } else {
+      if (hero_x > 68 && m_levelOffset < 14) {
+         LM_scrollRight();
+      } else if (nEnem >= ENEMIES_LOCK_SCROLL) {
+         m_levelStatus |= LS_ScrollLock;
+      }
    }
 }
 

@@ -84,6 +84,7 @@ typedef struct Entity {
 ///////////////////////////////////////////////////////////////
 TEntity* EM_createEntity(u8 x, u8 y, u8 entType);
 TEntity* EM_getHero();
+u8       EM_getNumEnemies();
 void     EM_update();
 void     EM_draw();
 void     EM_clear();

@@ -78,6 +78,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 #define MAX_ENTITIES 8
 TEntity m_entities[MAX_ENTITIES];
 extern  u8 m_nEnt;        // Num of active entities
+extern  u8 m_nEnemies;    // Number of enemies in the screen
 extern  u8 m_nFrame;      // Update frame counter
 extern  u8 m_statusFlags; // Status flags: 0: drawSpriteFacing (0 Right, 1 Left)
 
@@ -90,9 +91,19 @@ void EM_dummy_init() {
    __asm
       _m_nEnt::        .db 0
       _m_nFrame::      .db 0
+      _m_nEnemies::    .db 0
       _m_statusFlags:: .db 0
    __endasm;
 }
+
+///////////////////////////////////////////////////////////////
+/// EM_getNumEnemies
+///   returns the number of enemies currently on the screen
+///////////////////////////////////////////////////////////////
+u8 EM_getNumEnemies() {
+   return m_nEnemies;
+}
+
 
 ///////////////////////////////////////////////////////////////
 /// EM_getHero
@@ -319,6 +330,8 @@ void EM_S_hitEnemy(TEntity *ebow) {
 ///   Marks an entity to be destroyed
 ///////////////////////////////////////////////////////////////
 void EM_deleteEntity(TEntity *e) {
+   if (e->type == T_Agent)
+      m_nEnemies--;
    e->t      = 2;    // 2 cicles until deleting
    e->type   = T_Destroyed;
    e->fstate = EM_S_waitingDelete;
@@ -354,7 +367,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
       // Assign FSM
       switch(entityID) {
          case E_Princess: fsm = EM_S_waitingUserInput; break;
-         case E_Agent:    fsm = EM_processAI; break;
+         case E_Agent:    fsm = EM_processAI; m_nEnemies++; break;
          case E_HitBow:   fsm = EM_S_hitEnemy; break;
       }
       e->fstate = fsm;
