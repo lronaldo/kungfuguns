@@ -77,23 +77,35 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 // Entities
 #define MAX_ENTITIES 8
 TEntity m_entities[MAX_ENTITIES];
-extern  u8 m_nEnt;        // Num of active entities
-extern  u8 m_nEnemies;    // Number of enemies in the screen
-extern  u8 m_nFrame;      // Update frame counter
-extern  u8 m_statusFlags; // Status flags: 0: drawSpriteFacing (0 Right, 1 Left)
+u8 m_nEnt;        // Num of active entities
+u8 m_nEnemies;    // Number of enemies in the screen
+u8 m_nFrame;      // Update frame counter
+u8 m_statusFlags; // Status flags: 0: drawSpriteFacing (0 Right, 1 Left)
 
 
 ///////////////////////////////////////////////////////////////
-/// dummy_init
-///   Statically initialize variables
+/// EM_initialize
+///   Initialize Entity Manager to start a new level
 ///////////////////////////////////////////////////////////////
-void EM_dummy_init() {
-   __asm
-      _m_nEnt::        .db 0
-      _m_nFrame::      .db 0
-      _m_nEnemies::    .db 0
-      _m_statusFlags:: .db 0
-   __endasm;
+void EM_initialize() {
+   m_nEnt     = 0;
+   m_nFrame   = 0;
+   m_nEnemies = 0;
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_leaveOnlyHero
+///   Instantly remove all entities except hero, and place 
+///   hero in a given location x, y
+///////////////////////////////////////////////////////////////
+void EM_leaveOnlyHero(u8 x, u8 y) {
+   TPoint *p = m_entities[0].pos + 0;
+
+   EM_initialize();
+   m_nEnt++;;
+   p->x = x; p->y = y; p++;
+   p->x = x; p->y = y; p++;
+   p->x = x; p->y = y; 
 }
 
 ///////////////////////////////////////////////////////////////
@@ -362,7 +374,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
       p = e->pos + 0;
       p->x = x; p->y = y; p++;
       p->x = x; p->y = y; p++;
-      p->x = x; p->y = y; p++;
+      p->x = x; p->y = y; 
 
       // Assign FSM
       switch(entityID) {

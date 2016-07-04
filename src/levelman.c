@@ -26,6 +26,8 @@
 #define FLOORCOLOR            0x0F
 #define ENEMIES_LOCK_SCROLL      3
 #define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
+#define NLEVELS                  2
+#define LEVEL_CHUCKS_SIZE       16
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -39,6 +41,11 @@ typedef enum {
    , LS_ScrollLock  = 0x04   // Flag for locking scroll
 } TLevelStatus;
 
+typedef struct {
+   u8*       map;
+   u8** tilesets[LEVEL_CHUCKS_SIZE];
+} TLevelData;
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 /// DATA
@@ -49,20 +56,35 @@ u8   m_backgroundMaps[2][20*17]; // 2 Tilemaps for present background
 u8*  m_bgMapPtr[2];              // Pointers to the 2 background maps for switching
 u8** m_bgTilPtr[2];              // Pointers to the 2 background tilesets 
 u8   m_levelStatus;              // Flags controlling level status (76543210 > 7-6: redraw Floor, Bg, 1-0: Level number, 2: scroll_lock)
-u8*  m_levelMap;                 // Map of the present level
 u16  m_levelOffset;              // Offset of the hero into the level (for scrolling background)
+
+// Level data
+TLevelData *m_level;             // Pointer to the current level
 
 // Tilesets
 u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tileset0_03, g_tileset0_04, g_tileset0_05, g_tileset0_06, g_tileset0_07, g_tileset0_08, g_tileset0_09, g_tileset0_10, g_tileset0_11, g_tileset0_12, g_tileset0_13, g_tileset0_14, g_tileset0_15};
 u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
 
-// Level Tileset Layouts
-#define NLEVELS             2
-#define LEVEL_CHUCKS_SIZE  16
-u8** const m_levelTilesets[NLEVELS][LEVEL_CHUCKS_SIZE] = {
-     { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
-   , { g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1, g_tileset0, g_tileset1 }
-};
+extern TLevelData m_levels[NLEVELS];
+
+/// Initializing static data
+void LM_dummy_init() __naked {
+   __asm
+   _m_levels::
+   // LEVEL 0
+      .dw   _g_level0    // map / tilesets
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1 
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+   // LEVEL 1
+      .dw   _g_level1    // map / tilesets
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1 
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+   __endasm;
+}
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -76,9 +98,11 @@ u8** const m_levelTilesets[NLEVELS][LEVEL_CHUCKS_SIZE] = {
 ///////////////////////////////////////////////////////////////
 void fillBg(u8* bg, u16 idx) {
    u8 i, j;
+   u8* map = m_level->map;
+
    for(i=0; i < 17;i++) {
       for(j=0; j < 20;j++) {
-         *bg = cpct_get4Bits(m_levelMap, idx);
+         *bg = cpct_get4Bits(map, idx);
          bg++; idx++;
       }
       idx += 320 - 20;
@@ -163,18 +187,18 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
 /// LM_initialize
 ///   Initializes the level manager object
 ///////////////////////////////////////////////////////////////
-void LM_initialize() {
+void LM_initialize(u8 level) {
    // At first, redraw floor and Background is required
    // And select level 0 (2 LSbits = 0)
    m_levelStatus  = LS_RedrawFloor | LS_RedrawBg;
    
    // Set level, offset and background pointers
-   m_levelMap     = g_level0;
+   m_level        = m_levels + level;
    m_levelOffset  = 0;
    m_bgMapPtr[0]  = m_backgroundMaps[0];
    m_bgMapPtr[1]  = m_backgroundMaps[1];
-   m_bgTilPtr[0]  = m_levelTilesets[0][0];
-   m_bgTilPtr[1]  = m_levelTilesets[0][1];
+   m_bgTilPtr[0]  = m_level->tilesets[0];
+   m_bgTilPtr[1]  = m_level->tilesets[1];
 
    // Fill in present background part of the level map
    fillBg(m_bgMapPtr[0], 0);
@@ -187,6 +211,16 @@ void LM_initialize() {
    cpct_drawSolidBox((void*)(0x8000 + 40), BACKGROUNDCOLOR, 40, 200);
 }
 
+
+///////////////////////////////////////////////////////////////
+/// LM_isLevelFinished
+///   Checks if the level is finished
+///////////////////////////////////////////////////////////////
+u8 LM_isLevelFinished() {
+   return   ( m_levelOffset == LEVEL_CHUCKS_SIZE - 2 )
+         && ( EM_getNumEnemies() == 0 );
+}
+
 ///////////////////////////////////////////////////////////////
 /// LM_scrollRight
 ///   Scrolls map 1 place to the right
@@ -197,7 +231,7 @@ void LM_scrollRight() {
    m_levelOffset++;
    SWITCH_PTR(m_bgMapPtr[0], m_bgMapPtr[1]);
    m_bgTilPtr[0] = m_bgTilPtr[1];
-   m_bgTilPtr[1] = m_levelTilesets[m_levelStatus & 3][m_levelOffset+1];
+   m_bgTilPtr[1] = m_level->tilesets[m_levelOffset+1];
    fillBg(m_bgMapPtr[1], 20*(m_levelOffset+1));
 
    // Mark for redrawing
@@ -222,7 +256,7 @@ void LM_update(u8 hero_x) {
       if (!nEnem)
          m_levelStatus &= ~LS_ScrollLock;
    } else {
-      if (hero_x > 68 && m_levelOffset < 14) {
+      if (hero_x > 68 && m_levelOffset < LEVEL_CHUCKS_SIZE - 2) {
          LM_scrollRight();
       } else if (nEnem >= ENEMIES_LOCK_SCROLL) {
          m_levelStatus |= LS_ScrollLock;

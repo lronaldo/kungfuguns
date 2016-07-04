@@ -94,5 +94,7 @@ void     EM_scroll(i8 pixels);
 void     EM_addEntity2Draw(TEntity *e2d);
 void     EM_deleteEntity(TEntity *e);
 void     EM_nextWalkingFrame(TEntity* e);
+void     EM_leaveOnlyHero(u8 x, u8 y);
+
 
 #endif

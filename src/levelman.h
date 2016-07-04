@@ -23,7 +23,8 @@
 /// EXPORTED PUBLIC FUNCTIONS
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-void LM_initialize();
-void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf);
-void LM_update(u8 hero_x);
-void LM_draw();
+void  LM_initialize(u8 level);
+void  LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf);
+void  LM_update(u8 hero_x);
+void  LM_draw();
+u8    LM_isLevelFinished();
