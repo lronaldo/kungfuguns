@@ -21,8 +21,9 @@
 #include "sprites/agent0.h"
 #include "sprites/princess.h"
 #include "sprites/spritesets.h"
-//#include "music/fromscratch.h"
 #include "music/princess7.h"
+
+#define BACKGROUNDCOLOR       0xC0
 
 // Locate all this initialization code in the hardware backbuffer area
 CPCT_ABSOLUTE_LOCATION_AREA (0x8000);
@@ -33,6 +34,16 @@ u8* const agent0_sps[8]     = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, 
 u8* const heroAttack_sps[1] = { g_hit };
 
 void interruptHandler();
+
+extern u8* endOfClearAll;
+
+void clearAllVideoMemory() {
+   cpct_drawSolidBox((void*)0x8000,        BACKGROUNDCOLOR, 40, 200);
+   cpct_drawSolidBox((void*)(0x8000 + 40), BACKGROUNDCOLOR, 40, 200);
+   __asm
+   _endOfClearAll::
+   __endasm;
+}
 
 void initCPC() {
    // Set the interrupt handler just after first VSYNC
@@ -47,12 +58,23 @@ void initCPC() {
    // Initialize Music
    cpct_akp_musicInit(g_renegremix);
    cpct_akp_SFXInit  (g_renegremix);
-   
+
    // Copy sprite sets and other to spare video memory
    cpct_memcpy((void*)  princess_sps_add,   princess_sps, sizeof(  princess_sps));
    cpct_memcpy((void*)    agent0_sps_add,     agent0_sps, sizeof(    agent0_sps));
    cpct_memcpy((void*)heroAttack_sps_add, heroAttack_sps, sizeof(heroAttack_sps));
-}
 
+   // Clear all video memory
+   cpct_drawSolidBox(CPCT_VMEM_START,      BACKGROUNDCOLOR, 40, 200);
+   cpct_drawSolidBox(CPCT_VMEM_START + 40, BACKGROUNDCOLOR, 40, 200);
+   
+   // Copy 0x8000 clear code to spare video memory at 0xCFD0
+   // Executing from there, instead of from here, will ensuree that we won't 
+   // overwrite our own executing code while erasing back buffer
+   cpct_memcpy((void*)0xCFD0, (void*)clearAllVideoMemory, (u16)&endOfClearAll - (u16)clearAllVideoMemory + 1);
+   __asm
+   jp  0xCFD0
+   __endasm;   
+}
 
 CPCT_RELOCATABLE_AREA ();

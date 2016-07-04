@@ -48,7 +48,7 @@
 
 # Name of the project (without spaces, as it will be used as filename)
 #   and Z80 memory location where code will start in the generated binary
-PROJNAME   := codeprin
+PROJNAME   := kfguns
 Z80CODELOC := 0x1100
 
 ##

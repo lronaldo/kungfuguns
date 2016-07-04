@@ -21,6 +21,7 @@
 #include "entityman.h"
 #include "levelman.h"
 #include "screenman.h"
+#include "scoreman.h"
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -30,7 +31,6 @@
 
 TEntity *hero;
 u8  mgm_level;
-u8  m_menubg;
 extern u32 m_rndState;
 
 ///////////////////////////////////////////////////////////////
@@ -63,6 +63,8 @@ void GM_startgame() {
    // Initialize entity manager and create hero
    LM_initialize(0);
    hero = EM_createEntity(10, 95, E_Princess);
+   CM_inititalize(24, 0);
+   hero->energy = 24;
    mgm_level = 0;
 }
 
@@ -80,12 +82,12 @@ void GM_startmenu () {
       LM_setOffset(getRand());
       LM_drawBg(SM_scrBuf());
 
-      cpct_drawStringM0 ("CODE PRINCESS"
-                        ,  cpctm_screenPtr(CPCT_VMEM_START, 14, 70)
-                        ,  getRand() & 0x07 + 2, 1);
+      cpct_drawStringM0 ("KUNG FU GUNS"
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 13, 70)
+                        ,  getRand() & 0x03 + 3, 1);
 
-      cpct_drawStringM0 ("ANY KEY TO START"
-                        ,  cpctm_screenPtr(CPCT_VMEM_START, 10, 140)
+      cpct_drawStringM0 ("PRESS ANY KEY"
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 12, 140)
                         ,  getRand() & 0x07 + 2, 10);
 
       while (--c) {
@@ -117,6 +119,7 @@ void GM_update() {
    EM_update();
    LM_update(hero->pos[2].x);
    EM_clear();
+   CM_draw();
 //   cpct_setBorder(HW_BLACK);
    cpct_waitVSYNC();
 }

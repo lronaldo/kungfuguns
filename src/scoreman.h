@@ -16,35 +16,22 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
 
-#ifndef __SOUNDMAN_H__
-#define __SOUNDMAN_H__
-
-///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-/// EXPORTED PUBLIC TYPES
-///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-
-// SFX Types
-typedef enum {
-//      SFX_shoot    = 0x0c
-//   ,  SFX_punch    = 0x0d
-//   ,  SFX_getItem  = 0x0f
-//   ,  SFX_die      = 0x10
-//   ,  SFX_enemyDie = 0x11
-      SFX_getItem  = 2
-   ,  SFX_beingHit = 4
-   ,  SFX_shoot    = 6
-   ,  SFX_punch    = 7
-   ,  SFX_die      = 9
-   ,  SFX_enemyDie = 9
-} TSFXType;
+#ifndef __SCOREMAN_H__
+#define __SCOREMAN_H__
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 /// EXPORTED PUBLIC FUNCTIONS
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-void  MM_playSFX(TSFXType sfx);
+void  CM_drawHeader();
+void  CM_inititalize(u8 live, u16 points);
+void  CM_draw();
+void  CM_updateDraw();
+void  CM_updatePoints_draw();
+void  CM_setPoints(u16 points);
+void  CM_addPoints(u16 points);
+void  CM_addLife(i8 lifeadd);
+u8    CM_getLife();
 
 #endif

@@ -20,6 +20,7 @@
 #include "agentFSM.h"
 #include "../entityman.h"
 #include "../soundman.h"
+#include "../scoreman.h"
 
 ///////////////////////////////////////////////////////////////
 /// Timing configuration
@@ -94,6 +95,7 @@ void EM_S_beingHit(TEntity *e) {
 ///   Enters the beingHit state
 ///////////////////////////////////////////////////////////////
 void EM_S_enter_beingHit(TEntity *e, u8 energy, u8 facing) {
+   CM_addPoints(e->energy);
    e->t       = 8;
    e->energy -= energy;
    e->status  = (e->status & 0xFE) | facing;
@@ -125,7 +127,8 @@ void EM_enter_punch(TEntity *e) {
    e->t      = AGENT_PUNCH_COOLDOWN_CYCLES;
    e->fstate = EM_S_punch;
    e->sprite = e->spriteset[4];
-   EM_addEntity2Draw(e);   
+   EM_addEntity2Draw(e);
+   MM_playSFX(SFX_punch);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -165,8 +168,11 @@ void EM_processAI(TEntity *e) {
 void EM_enter_processAI(TEntity *e) {
    e->sprite = e->spriteset[0];
    e->fstate = EM_processAI;
-   if (e->energy < 0)
+   if (e->energy < 0) {
+      CM_addPoints(e->type * 16);
       EM_deleteEntity(e);
+      MM_playSFX(SFX_enemyDie);
+   }
    EM_addEntity2Draw(e);   
 }
 

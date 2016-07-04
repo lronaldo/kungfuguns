@@ -24,8 +24,6 @@
 #include "tiles/tileset2.h"
 #include "tiles/tileset3.h"
 
-#define BACKGROUNDCOLOR       0xC0
-#define FLOORCOLOR            0x0F
 #define ENEMIES_LOCK_SCROLL      3
 #define SWITCH_PTR(P1, P2) { void* auxp; auxp=(void*)(P1); (P1)=(P2); (P2)=auxp; }
 #define NLEVELS                  2
@@ -65,16 +63,53 @@ u16  m_levelOffset;              // Offset of the hero into the level (for scrol
 TLevelData *m_level;             // Pointer to the current level
 
 // Tilesets
-u8* const g_tileset0[16] = {g_tileset0_00, g_tileset0_01, g_tileset0_02, g_tileset0_03, g_tileset0_04, g_tileset0_05, g_tileset0_06, g_tileset0_07, g_tileset0_08, g_tileset0_09, g_tileset0_10, g_tileset0_11, g_tileset0_12, g_tileset0_13, g_tileset0_14, g_tileset0_15};
-u8* const g_tileset1[16] = {g_tileset1_00, g_tileset1_01, g_tileset1_02, g_tileset1_03, g_tileset1_04, g_tileset1_05, g_tileset1_06, g_tileset1_07, g_tileset1_08, g_tileset1_09, g_tileset1_10, g_tileset1_11, g_tileset1_12, g_tileset1_13, g_tileset1_14, g_tileset1_15};
-u8* const g_tileset2[16] = {g_tileset2_00, g_tileset2_01, g_tileset2_02, g_tileset2_03, g_tileset2_04, g_tileset2_05, g_tileset2_06, g_tileset2_07, g_tileset2_08, g_tileset2_09, g_tileset2_10, g_tileset2_11, g_tileset2_12, g_tileset2_13, g_tileset2_14, g_tileset2_15};
-u8* const g_tileset3[16] = {g_tileset3_00, g_tileset3_01, g_tileset3_02, g_tileset3_03, g_tileset3_04, g_tileset3_05, g_tileset3_06, g_tileset3_07, g_tileset3_08, g_tileset3_09, g_tileset3_10, g_tileset3_11, g_tileset3_12, g_tileset3_13, g_tileset3_14, g_tileset3_15};
+extern u8* const g_tileset0[16];
+extern u8* const g_tileset1[16];
+extern u8* const g_tileset2[16];
+extern u8* const g_tileset3[16];
 
+// Level data
 extern TLevelData m_levels[NLEVELS];
 
-/// Initializing static data
+///////////////////////////////////////////////////////////////
+/// LM_dummy_init
+///   Dummy function for static data initializing
+///////////////////////////////////////////////////////////////
 void LM_dummy_init() __naked {
    __asm
+   ///-------------------------------
+   /// TILESETS
+   ///-------------------------------
+
+   // Tileset 0
+   _g_tileset0::
+   .dw _g_tileset0_00, _g_tileset0_01, _g_tileset0_02, _g_tileset0_03
+   .dw _g_tileset0_04, _g_tileset0_05, _g_tileset0_06, _g_tileset0_07
+   .dw _g_tileset0_08, _g_tileset0_09, _g_tileset0_10, _g_tileset0_11
+   .dw _g_tileset0_12, _g_tileset0_13, _g_tileset0_14, _g_tileset0_15
+
+   // Tileset 1
+   _g_tileset1::
+   .dw _g_tileset1_00, _g_tileset1_01, _g_tileset1_02, _g_tileset1_03
+   .dw _g_tileset1_04, _g_tileset1_05, _g_tileset1_06, _g_tileset1_07
+   .dw _g_tileset1_08, _g_tileset1_09, _g_tileset1_10, _g_tileset1_11
+   .dw _g_tileset1_12, _g_tileset1_13, _g_tileset1_14, _g_tileset1_15
+
+   _g_tileset2::
+   .dw _g_tileset2_00, _g_tileset2_01, _g_tileset2_02, _g_tileset2_03
+   .dw _g_tileset2_04, _g_tileset2_05, _g_tileset2_06, _g_tileset2_07
+   .dw _g_tileset2_08, _g_tileset2_09, _g_tileset2_10, _g_tileset2_11
+   .dw _g_tileset2_12, _g_tileset2_13, _g_tileset2_14, _g_tileset2_15
+
+   _g_tileset3::
+   .dw _g_tileset3_00, _g_tileset3_01, _g_tileset3_02, _g_tileset3_03
+   .dw _g_tileset3_04, _g_tileset3_05, _g_tileset3_06, _g_tileset3_07
+   .dw _g_tileset3_08, _g_tileset3_09, _g_tileset3_10, _g_tileset3_11
+   .dw _g_tileset3_12, _g_tileset3_13, _g_tileset3_14, _g_tileset3_15
+
+   ///-------------------------------
+   /// LEVELS
+   ///-------------------------------
    _m_levels::
    // LEVEL 0
       .dw   _g_level0    // map / tilesets
@@ -222,12 +257,6 @@ void LM_initialize(u8 level) {
    // Fill in present background part of the level map
    fillBg(m_bgMapPtr[0], 0);
    fillBg(m_bgMapPtr[1], 20);
-
-   // Clear all video memory
-   cpct_drawSolidBox(CPCT_VMEM_START,      BACKGROUNDCOLOR, 40, 200);
-   cpct_drawSolidBox(CPCT_VMEM_START + 40, BACKGROUNDCOLOR, 40, 200);
-   cpct_drawSolidBox((void*)0x8000,        BACKGROUNDCOLOR, 40, 200);
-   cpct_drawSolidBox((void*)(0x8000 + 40), BACKGROUNDCOLOR, 40, 200);
 }
 
 

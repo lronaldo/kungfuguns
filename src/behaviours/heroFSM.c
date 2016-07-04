@@ -20,6 +20,7 @@
 #include "heroFSM.h"
 #include "../entityman.h"
 #include "../soundman.h"
+#include "../scoreman.h"
 
 ///////////////////////////////////////////////////////////////
 /// Timing configuration
@@ -97,6 +98,8 @@ void EM_enter_heroBeingHit(TEntity *e, u8 energy, u8 facing) {
    e->fstate  = EM_S_heroBeingHit;
    e->nextAction = (facing & 1) ? A_MoveLeft : A_MoveRight;
    EM_addEntity2Draw(e);
+   CM_addLife(-energy);
+   MM_playSFX(SFX_beingHit);
 }
 
 
@@ -176,7 +179,7 @@ void EM_enter_heroPerformsAttack(TEntity *e) {
 
    // Perform attack
    EM_createHitBow(p->x, p->y + 2, (e->status & 1));
-   MM_playSFX(7);
+   MM_playSFX(SFX_punch);
 
    // Enter the performs attack state   
    e->t      = PUNCH_COOLDOWN_CYCLES;
