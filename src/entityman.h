@@ -82,8 +82,8 @@ typedef struct Entity {
 /// EXPORTED PUBLIC FUNCTIONS
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-void     EM_initialize();
 TEntity* EM_createEntity(u8 x, u8 y, u8 entType);
+TEntity* EM_getHero();
 void     EM_update();
 void     EM_draw();
 void     EM_clear();
@@ -92,5 +92,6 @@ void     EM_moveEntityX(TEntity* e, i8 pixels);
 void     EM_scroll(i8 pixels);
 void     EM_addEntity2Draw(TEntity *e2d);
 void     EM_deleteEntity(TEntity *e);
+void     EM_nextWalkingFrame(TEntity* e);
 
 #endif

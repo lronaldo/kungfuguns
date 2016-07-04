@@ -21,8 +21,9 @@
 #include "gameman.h"
 #include "screenman.h"
 #include "levelman.h"
-#include "heroFSM.h"
 #include "soundman.h"
+#include "behaviours/heroFSM.h"
+#include "behaviours/agentFSM.h"
 #include "sprites/princess.h"
 #include "sprites/agent0.h"
 #include "sprites/hit.h"
@@ -91,6 +92,34 @@ void EM_dummy_init() {
       _m_nFrame::      .db 0
       _m_statusFlags:: .db 0
    __endasm;
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_getHero
+///   returns a pointer to the hero Entity
+///////////////////////////////////////////////////////////////
+TEntity* EM_getHero() {
+   return m_entities + 0;
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_nextWalkingFrame
+///   Selects next walking frame for the agent entity
+///////////////////////////////////////////////////////////////
+#define CYCLES_PER_FRAME  2
+#define MAX_ANIM 2
+void EM_nextWalkingFrame(TEntity* e) {
+   u8 f;
+   
+   // Calculate next frame
+   ++e->t;
+   f = e->t / CYCLES_PER_FRAME;
+   if (f > MAX_ANIM) {
+      f = 1;
+      e->t = CYCLES_PER_FRAME-1;
+   } 
+   // Select frame
+   e->sprite = e->spriteset[f];
 }
 
 ///////////////////////////////////////////////////////////////
@@ -204,33 +233,6 @@ void EM_move(TEntity *e) {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_processAI
-///   Process AI of the entity
-///////////////////////////////////////////////////////////////
-void EM_processAI(TEntity *e) {
-   // Get hero
-   TPoint *herop = m_entities[0].pos + 2;
-   TPoint     *p = e->pos + 2;
-   u8          a = 0;
-   
-   // Follow hero
-   if (p->x < herop->x - 7) {
-      a = A_MoveRight;
-   } else if (p->x > herop->x + 7) {
-      a = A_MoveLeft;
-   } else if (p->y < herop->y) {
-      a = A_MoveDown;
-   } else if (p->y > herop->y) {
-      a = A_MoveUp;
-   }
-   if (a) {
-      e->nextAction = a;
-      EM_move(e);
-      EM_addEntity2Draw(e);
-   }
-}
-
-///////////////////////////////////////////////////////////////
 /// EM_freeDeletedEntity
 ///   Frees space that a deleted entity takes
 ///////////////////////////////////////////////////////////////
@@ -280,56 +282,6 @@ void EM_S_waitingDelete(TEntity *e) {
 }
 
 ///////////////////////////////////////////////////////////////
-/// EM_S_enter_processAI
-///   An entity returns to the processAI state
-///////////////////////////////////////////////////////////////
-void EM_S_enter_processAI(TEntity *e) {
-   e->sprite = e->spriteset[0];
-   e->fstate = EM_processAI;
-   if (e->energy < 0)
-      EM_deleteEntity(e);
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_S_beingHit
-///   Enters the beingHit state
-///////////////////////////////////////////////////////////////
-void EM_S_beingHit(TEntity *e) {
-   --e->t;
-   if (e->t) {
-      //e->nextAction = (e->status & 1) ? A_MoveRight : A_MoveLeft;
-      EM_move(e);
-   } else {
-      EM_S_enter_processAI(e);
-   }
-   EM_addEntity2Draw(e);
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_S_enter_beingHit
-///   Enters the beingHit state
-///////////////////////////////////////////////////////////////
-void EM_S_enter_beingHit(TEntity *e, u8 energy, u8 facing) {
-   e->t       = 8;
-   e->energy -= energy;
-   e->status  = (e->status & 0xFE) | facing;
-   e->sprite  = e->spriteset[3];
-   e->fstate  = EM_S_beingHit;
-   e->nextAction = (facing & 1) ? A_MoveLeft : A_MoveRight;
-   EM_addEntity2Draw(e);
-}
-
-///////////////////////////////////////////////////////////////
-/// EM_deleteEntity
-///   Marks an entity to be destroyed
-///////////////////////////////////////////////////////////////
-void EM_deleteEntity(TEntity *e) {
-   e->t      = 2;    // 2 cicles until deleting
-   e->type   = T_Destroyed;
-   e->fstate = EM_S_waitingDelete;
-}
-
-///////////////////////////////////////////////////////////////
 /// EM_S_hitEnemy
 ///   A Hit Bow checks if it is hitting an enemy or not
 ///////////////////////////////////////////////////////////////
@@ -359,6 +311,17 @@ void EM_S_hitEnemy(TEntity *ebow) {
    --ebow->t;
    if (!ebow->t)
       EM_deleteEntity(ebow);
+}
+
+
+///////////////////////////////////////////////////////////////
+/// EM_deleteEntity
+///   Marks an entity to be destroyed
+///////////////////////////////////////////////////////////////
+void EM_deleteEntity(TEntity *e) {
+   e->t      = 2;    // 2 cicles until deleting
+   e->type   = T_Destroyed;
+   e->fstate = EM_S_waitingDelete;
 }
 
 ///////////////////////////////////////////////////////////////

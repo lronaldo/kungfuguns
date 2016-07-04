@@ -18,8 +18,8 @@
 
 #include <cpctelera.h>
 #include "heroFSM.h"
-#include "entityman.h"
-#include "soundman.h"
+#include "../entityman.h"
+#include "../soundman.h"
 
 ///////////////////////////////////////////////////////////////
 /// EM_checkUserArrows
@@ -53,10 +53,13 @@ void EM_S_walking(TEntity* e) {
    EM_checkUserArrows(e);
    if (e->nextAction) {
       // Next animation frame
+      /*
       u8 ft = ++e->t / FRAMES_STEP_WALK;
       if (ft >= 2)
          e->t = 0;
       e->sprite = e->spriteset[ft];
+      */
+      EM_nextWalkingFrame(e);
       EM_move(e);
    } else {
       // Stop walking
