@@ -19,6 +19,7 @@
 #include <cpctelera.h>
 #include "heroFSM.h"
 #include "entityman.h"
+#include "soundman.h"
 
 ///////////////////////////////////////////////////////////////
 /// EM_checkUserArrows
@@ -109,7 +110,7 @@ void EM_S_heroPerformsAttack(TEntity *e) {
 void EM_createHitBow(u8 x, u8 y, u8 facing) {
    TEntity *ebow;
    
-   // 
+   // Bow is created left or right the player depending on facing
    if (facing == F_Right)
       x += 6; 
    else 
@@ -133,6 +134,7 @@ void EM_S_heroSetupAttack(TEntity *e) {
       e->sprite = e->spriteset[4];
       e->fstate = EM_S_heroPerformsAttack;
       EM_createHitBow(p->x, p->y + 2, (e->status & 1));
+      MM_playSFX(7);
 
       EM_addEntity2Draw(e);
    }

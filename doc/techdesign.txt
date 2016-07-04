@@ -82,3 +82,12 @@ MUSICA:
    http://lronaldo.github.io/cpctelera/files/audio/arkostracker-s.html#cpct_akp_SFXPlay
 
    Los FX se mezclan automáticamente con la música que esté sonando, sin interrumpir canales. Eso sí, a veces la mezcla puede quedar rara según lo que se mezcle.
+
+SFX 
+==============
+   Usar nota C3 para reproducir
+   0c: fx_shoot (disparo de la heroína)
+   0d: fx_puncn (puñetado de la heroína)
+   0f: fx_get_item (coge item)
+   10: fx_die (heroína muere)
+   11: fx_enemy_die (muere enemigo)

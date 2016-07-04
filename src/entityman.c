@@ -22,6 +22,7 @@
 #include "screenman.h"
 #include "levelman.h"
 #include "heroFSM.h"
+#include "soundman.h"
 #include "sprites/princess.h"
 #include "sprites/agent0.h"
 #include "sprites/hit.h"
@@ -296,7 +297,7 @@ void EM_S_enter_processAI(TEntity *e) {
 void EM_S_beingHit(TEntity *e) {
    --e->t;
    if (e->t) {
-      e->nextAction = A_MoveRight;
+      //e->nextAction = (e->status & 1) ? A_MoveRight : A_MoveLeft;
       EM_move(e);
    } else {
       EM_S_enter_processAI(e);
@@ -308,11 +309,13 @@ void EM_S_beingHit(TEntity *e) {
 /// EM_S_enter_beingHit
 ///   Enters the beingHit state
 ///////////////////////////////////////////////////////////////
-void EM_S_enter_beingHit(TEntity *e, u8 energy) {
+void EM_S_enter_beingHit(TEntity *e, u8 energy, u8 facing) {
    e->t       = 8;
    e->energy -= energy;
+   e->status  = (e->status & 0xFE) | facing;
    e->sprite  = e->spriteset[3];
    e->fstate  = EM_S_beingHit;
+   e->nextAction = (facing & 1) ? A_MoveLeft : A_MoveRight;
    EM_addEntity2Draw(e);
 }
 
@@ -343,7 +346,7 @@ void EM_S_hitEnemy(TEntity *ebow) {
          if ( pe->y == pbow->y - 2) {
             if (  pe->x > pbow->x - e->w
                && pe->x < pbow->x + ebow->w)
-               EM_S_enter_beingHit(e, ebow->energy);
+               EM_S_enter_beingHit(e, ebow->energy, (ebow->status & 1));
          }
       }
       --i; ++e;

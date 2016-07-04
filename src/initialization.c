@@ -46,6 +46,7 @@ void initCPC() {
 
    // Initialize Music
    cpct_akp_musicInit(g_renegremix);
+   cpct_akp_SFXInit  (g_renegremix);
    
    // Copy sprite sets and other to spare video memory
    cpct_memcpy((void*)  princess_sps_add,   princess_sps, sizeof(  princess_sps));
