@@ -26,9 +26,10 @@
 #include "sprites/agent0.h"
 #include "sprites/hit.h"
 #include "sprites/spritesets.h"
+#include "sprites/drawSpriteFlippedTable.h"
 
 // Print transparency mask table
-cpctm_createTransparentMaskTable(g_alphatable, 0x100, M0, 0);
+cpctm_createTransparentMaskTable(g_alphatable, 0x200, M0, 0);
 
 // Entity types
 #define NUM_ENTITY_ATTRIBS 8
@@ -96,7 +97,8 @@ void EM_dummy_init() {
 void EM_drawEntity(TEntity *e, void* buf) {
    TPoint* p = e->pos + 2;
    u8 *scr   = cpct_getScreenPtr(buf, p->x, p->y);
-   cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
+   //cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
+   drawSpriteFlipAlphaTable(e->sprite, scr, e->w, e->h);
 }
 
 ///////////////////////////////////////////////////////////////
