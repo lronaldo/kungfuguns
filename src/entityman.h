@@ -51,6 +51,12 @@ typedef enum {
    , T_HitBow    = 0x04
 } TEntityType;
 
+// Side towards an entity is facing
+typedef enum {
+      F_Right    = 0x00
+   ,  F_Left     = 0x01
+} TFacing;
+
 // Point
 typedef struct {
    u8 x, y;
@@ -58,15 +64,16 @@ typedef struct {
 
 // Entity definition
 typedef struct Entity {
-   TPoint     pos[3];     // 3 Locations
-   u8           w, h;     // Width-height
-   u8          drawt;     // Times the entity has still to be drawn
-   TEntityType  type;     // Type of entity
-   u8**        spriteset; // Set of sprites
-   u8          t;         // Time in this state
-   i8          energy;    // Energy this entity carries (may be life or hit strength)
-   u8*         sprite;    // Sprite currently being drawn
-   u8          nextAction;// Next action to be performed
+   TPoint         pos[3];  // 3 Locations
+   u8               w, h;  // Width-height
+   u8              drawt;  // Times the entity has still to be drawn
+   TEntityType      type;  // Type of entity
+   u8             status;  // Status byte for the entity (0: facing 0 right, 1 left)
+   u8**        spriteset;  // Set of sprites
+   u8                  t;  // Time in this state
+   i8             energy;  // Energy this entity carries (may be life or hit strength)
+   u8*            sprite;  // Sprite currently being drawn
+   u8         nextAction;  // Next action to be performed
    void (*fstate)(struct Entity *e);    // Entity state function 
 } TEntity;
 

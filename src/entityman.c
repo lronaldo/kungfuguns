@@ -32,7 +32,7 @@
 cpctm_createTransparentMaskTable(g_alphatable, 0x200, M0, 0);
 
 // Entity types
-#define NUM_ENTITY_ATTRIBS 8
+#define NUM_ENTITY_ATTRIBS 9
 const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
    // 0: Princess
    { 
@@ -40,6 +40,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
       , 0x1C
       , 0x02                  // New entity, has to be drawn twice (once per buffer)
       , T_Princess            // Type of entity: princess
+      , F_Right               // Entity is facing right
       , princess_sps_add_lo   // Pointer to princess_sps split into its 2 bytes
       , princess_sps_add_hi
       , 0x00                  // t=0
@@ -51,6 +52,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
       , 0x1C
       , 0x02              // New entity, has to be drawn twice (once per buffer)
       , T_Agent           // Type of entity: agent
+      , F_Left            // Entity is facing left
       , agent0_sps_add_lo // Pointer to agent_sps split into its 2 bytes
       , agent0_sps_add_hi
       , 0x00              // t=0
@@ -62,6 +64,7 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
       , 0x0E
       , 0x02                  // New entity, has to be drawn twice (once per buffer)
       , T_HitBow              // Type of entity: Hit Bow
+      , F_Right               // Entity is facing right
       , heroAttack_sps_add_lo // Attack has only 1 sprite (no spriteset)
       , heroAttack_sps_add_hi
       , 0x03                  // t=3 frames
@@ -71,10 +74,10 @@ const u8 k_entityTypes[3][NUM_ENTITY_ATTRIBS] = {
 
 // Entities
 #define MAX_ENTITIES 8
-TEntity  m_entities[MAX_ENTITIES];
-extern u8 m_nEnt;        // Num of active entities
-extern u8 m_nDelEnt;     // Deleted entities counter
-extern u8 m_nFrame;      // Update frame counter
+TEntity m_entities[MAX_ENTITIES];
+extern  u8 m_nEnt;        // Num of active entities
+extern  u8 m_nFrame;      // Update frame counter
+extern  u8 m_statusFlags; // Status flags: 0: drawSpriteFacing (0 Right, 1 Left)
 
 
 ///////////////////////////////////////////////////////////////
@@ -83,9 +86,9 @@ extern u8 m_nFrame;      // Update frame counter
 ///////////////////////////////////////////////////////////////
 void EM_dummy_init() {
    __asm
-      _m_nEnt::      .db 0
-      _m_nDelEnt::   .db 0
-      _m_nFrame::    .db 0
+      _m_nEnt::        .db 0
+      _m_nFrame::      .db 0
+      _m_statusFlags:: .db 0
    __endasm;
 }
 
@@ -97,7 +100,14 @@ void EM_dummy_init() {
 void EM_drawEntity(TEntity *e, void* buf) {
    TPoint* p = e->pos + 2;
    u8 *scr   = cpct_getScreenPtr(buf, p->x, p->y);
-   //cpct_drawSpriteMaskedAlignedTable(e->sprite, scr, e->w, e->h, g_alphatable);
+
+   // Switch drawing mode if required
+   if ( (e->status & 1) != (m_statusFlags & 1) ) {
+      switchFlipForDrawSprite();
+      m_statusFlags ^= 1;
+   }
+
+   // Draw Entity
    drawSpriteFlipAlphaTable(e->sprite, scr, e->w, e->h);
 }
 
@@ -175,9 +185,11 @@ void EM_move(TEntity *e) {
   
    // Left - Right
    if ( (a & A_MoveLeft) && p->x > 0) {
-      p->x--; 
+      p->x--;
+      e->status = (e->status & 0xFE) | F_Left;
    } else if ( (a & A_MoveRight) && p->x < 80 - e->w) {
       p->x++; 
+      e->status = (e->status & 0xFE) | F_Right;
    } 
 
    // Up - Down
