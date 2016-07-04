@@ -29,8 +29,11 @@
 ///////////////////////////////////////////////////////////////
 void EM_S_beingHit(TEntity *e);
 void EM_S_enter_beingHit(TEntity *e, u8 energy, u8 facing);
-void EM_S_enter_processAI(TEntity *e);
-void EM_processAI(TEntity *e);
 void EM_S_pursuitHero(TEntity *e);
+void EM_S_heroBeingHit(TEntity *e);
+void EM_enter_heroBeingHit(TEntity *e, u8 energy, u8 facing);
+void EM_enter_processAI(TEntity *e);
+void EM_processAI(TEntity *e);
+
 
 #endif

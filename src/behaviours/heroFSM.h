@@ -32,5 +32,6 @@ void EM_S_waitingUserInput(TEntity* e);
 void EM_S_heroSetupAttack(TEntity* e);
 void EM_S_walking(TEntity* e);
 void EM_S_heroPerformsAttack(TEntity* e);
-
+void EM_enter_waitingUserInput(TEntity* e);
+void EM_enter_heroSetupAttack(TEntity *e);
 #endif
