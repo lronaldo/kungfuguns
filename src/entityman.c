@@ -120,6 +120,8 @@ void EM_clearEntity(TEntity *e, void *buf) {
    u8      i = 4;
    LM_redrawBackgroundBox(p->x, p->y, e->w, e->h, buf);
 
+   // pos[0] = pos[1] and pos[1] = pos[2]
+   // Copy bytes overwritting pos[0] which is outdated
    *((u32*)p) = *((u32*)(p+1));
 
    // After clearing, previous location does not matter anymore
@@ -281,7 +283,7 @@ void EM_S_waitingDelete(TEntity *e) {
 ///   An entity returns to the processAI state
 ///////////////////////////////////////////////////////////////
 void EM_S_enter_processAI(TEntity *e) {
-   e->sprite = e->spriteset[1];
+   e->sprite = e->spriteset[0];
    e->fstate = EM_processAI;
    if (e->energy < 0)
       EM_deleteEntity(e);
@@ -309,7 +311,7 @@ void EM_S_beingHit(TEntity *e) {
 void EM_S_enter_beingHit(TEntity *e, u8 energy) {
    e->t       = 8;
    e->energy -= energy;
-   e->sprite  = e->spriteset[4];
+   e->sprite  = e->spriteset[3];
    e->fstate  = EM_S_beingHit;
    EM_addEntity2Draw(e);
 }
@@ -377,7 +379,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
       
       // Initial values for the entity
       cpct_memcpy(&(e->w), k_entityTypes + entityID, NUM_ENTITY_ATTRIBS);
-      e->sprite = e->spriteset[1];
+      e->sprite = e->spriteset[0];
       p = e->pos + 0;
       p->x = x; p->y = y; p++;
       p->x = x; p->y = y; p++;

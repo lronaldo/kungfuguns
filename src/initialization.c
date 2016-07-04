@@ -27,10 +27,10 @@
 // Locate all this initialization code in the hardware backbuffer area
 CPCT_ABSOLUTE_LOCATION_AREA (0x8000);
 
-// Sprite Sets (1st byte contains facing flags)
-u8* const princess_sps[9]   = { (u8*)0x00, g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
-u8* const agent0_sps[9]     = { (u8*)0x00, g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
-u8* const heroAttack_sps[2] = { (u8*)0x00, g_hit };
+// Sprite Sets 
+u8* const princess_sps[8]   = { g_princess_0, g_princess_1, g_princess_2, g_princess_3, g_princess_4, g_princess_5, g_princess_6, g_princess_7 };
+u8* const agent0_sps[8]     = { g_agent0_0, g_agent0_1, g_agent0_2, g_agent0_3, g_agent0_4, g_agent0_5, g_agent0_6, g_agent0_7 };
+u8* const heroAttack_sps[1] = { g_hit };
 
 void interruptHandler();
 

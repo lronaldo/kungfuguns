@@ -23,16 +23,16 @@
 #define princess_sps_add      0xC7D0
 #define princess_sps_add_lo   0xD0
 #define princess_sps_add_hi   0xC7
-#define agent0_sps_add        0xC7E1
-#define agent0_sps_add_lo     0xE1
+#define agent0_sps_add        0xC7E0
+#define agent0_sps_add_lo     0xE0
 #define agent0_sps_add_hi     0xC7
-#define heroAttack_sps_add    0xC7F2
-#define heroAttack_sps_add_lo 0xF2
+#define heroAttack_sps_add    0xC7F0
+#define heroAttack_sps_add_lo 0xF0
 #define heroAttack_sps_add_hi 0xC7
 
 // Sprite set identifiers (1st byte contains facing flags)
-extern u8* const princess_sps[9];
-extern u8* const agent0_sps[9];
-extern u8* const heroAttack_sps[2];
+extern u8* const princess_sps[8];
+extern u8* const agent0_sps[8];
+extern u8* const heroAttack_sps[1];
 
 #endif

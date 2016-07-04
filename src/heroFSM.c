@@ -53,13 +53,13 @@ void EM_S_walking(TEntity* e) {
    if (e->nextAction) {
       // Next animation frame
       u8 ft = ++e->t / FRAMES_STEP_WALK;
-      if (ft >= 3)
-         e->t = FRAMES_STEP_WALK;
+      if (ft >= 2)
+         e->t = 0;
       e->sprite = e->spriteset[ft];
       EM_move(e);
    } else {
       // Stop walking
-      e->sprite = e->spriteset[1];
+      e->sprite = e->spriteset[0];
       e->fstate = EM_S_waitingUserInput;
    }
    EM_addEntity2Draw(e);
@@ -74,14 +74,14 @@ void EM_S_waitingUserInput(TEntity* e) {
    if (cpct_isKeyPressed(Key_Space)) {
       // Start hero attack
       e->t      = 2;   // 2 frames for set up
-      e->sprite = e->spriteset[5];
+      e->sprite = e->spriteset[3];
       e->fstate = EM_S_heroSetupAttack;
       EM_addEntity2Draw(e);
    } else {
       // Check if user presses arrows
       EM_checkUserArrows(e);
       if (e->nextAction) {
-         e->t      = FRAMES_STEP_WALK - 1;
+         e->t      = 0xFF;
          e->fstate = EM_S_walking;
          EM_S_walking(e);
       }
@@ -97,9 +97,26 @@ void EM_S_heroPerformsAttack(TEntity *e) {
    if (!e->t) {
       // Return to normal state
       e->fstate = EM_S_waitingUserInput;
-      e->sprite = e->spriteset[1];
+      e->sprite = e->spriteset[0];
       EM_addEntity2Draw(e);     
    }
+}
+
+///////////////////////////////////////////////////////////////
+/// EM_createHitBow
+///   Creates a new hit bow for hitting enemies
+///////////////////////////////////////////////////////////////
+void EM_createHitBow(u8 x, u8 y, u8 facing) {
+   TEntity *ebow;
+   
+   // 
+   if (facing == F_Right)
+      x += 6; 
+   else 
+      x -= 4;
+
+   ebow = EM_createEntity(x, y, E_HitBow);
+   ebow->status = (ebow->status & 0xFE) | facing;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -109,13 +126,14 @@ void EM_S_heroPerformsAttack(TEntity *e) {
 void EM_S_heroSetupAttack(TEntity *e) {  
    --e->t;
    if (!e->t) {     
-      TPoint *p = e->pos + 2;
+      TPoint  *p = e->pos + 2;
 
       // Perform attack
-      e->t = 2;
-      e->sprite = e->spriteset[6];
+      e->t      = 2;
+      e->sprite = e->spriteset[4];
       e->fstate = EM_S_heroPerformsAttack;
-      EM_createEntity(p->x + 7, p->y + 2, E_HitBow);
+      EM_createHitBow(p->x, p->y + 2, (e->status & 1));
+
       EM_addEntity2Draw(e);
    }
 }
