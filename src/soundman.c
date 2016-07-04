@@ -37,5 +37,5 @@
 ///   Plays a sound fx 
 ///////////////////////////////////////////////////////////////
 void MM_playSFX(TSFXType sfx) {
-   cpct_akp_SFXPlay (sfx, 11, 50, 0, 0, AY_CHANNEL_B);
+   cpct_akp_SFXPlay (sfx, 11, 72, 0, 0, AY_CHANNEL_B);
 }

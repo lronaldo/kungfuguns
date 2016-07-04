@@ -61,11 +61,14 @@ void main(void) {
 
    // Initialize
    initCPC();
-   GM_initialize();
-
-   // Loop forever
    while (1) {
-      GM_update();
-      GM_draw();
+      GM_startmenu();
+      GM_startgame();
+
+      // Loop forever
+      while (1) {
+         GM_update();
+         GM_draw();
+      }
    }
 }

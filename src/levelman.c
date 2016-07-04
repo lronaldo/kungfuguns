@@ -73,10 +73,10 @@ void LM_dummy_init() __naked {
    _m_levels::
    // LEVEL 0
       .dw   _g_level0    // map / tilesets
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1 
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
-      .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1
+      .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0 
+      .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0
+      .dw   _g_tileset0, _g_tileset0, _g_tileset0, _g_tileset0
+      .dw   _g_tileset0, _g_tileset0, _g_tileset1, _g_tileset1
    // LEVEL 1
       .dw   _g_level1    // map / tilesets
       .dw   _g_tileset0, _g_tileset1, _g_tileset0, _g_tileset1 
@@ -113,7 +113,7 @@ void fillBg(u8* bg, u16 idx) {
 /// drawBg
 ///   Draws the background completely
 ///////////////////////////////////////////////////////////////
-void drawBg(u8 *buf) {
+void LM_drawBg(u8 *buf) {
    u8    *scr = buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START);
    u8       i = 2;
 
@@ -181,6 +181,18 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
       u8* scr = cpct_getScreenPtr(buf, x, h_start);
       cpct_drawSolidBox(scr, FLOORCOLOR, w, h_down);
    }
+}
+
+
+///////////////////////////////////////////////////////////////
+/// LM_setOffset
+///   Sets the offset of the scroll
+///////////////////////////////////////////////////////////////
+void LM_setOffset(u8 off) {
+   m_levelOffset = off & 0x0F;
+   if (m_levelOffset) m_levelOffset--;
+   fillBg(m_bgMapPtr[0], 20 * m_levelOffset);
+   fillBg(m_bgMapPtr[1], 20 * (m_levelOffset + 1));
 }
 
 ///////////////////////////////////////////////////////////////
@@ -288,8 +300,8 @@ void LM_draw() {
    
    // Redraw Background when required
    if (m_levelStatus & LS_RedrawBg) {
-      drawBg((void*)0x8000);
-      drawBg(CPCT_VMEM_START);
+      LM_drawBg((void*)0x8000);
+      LM_drawBg(CPCT_VMEM_START);
       m_levelStatus ^= LS_RedrawBg;
    }
 }

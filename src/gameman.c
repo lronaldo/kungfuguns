@@ -29,7 +29,9 @@
 ///////////////////////////////////////////////////////////////
 
 TEntity *hero;
-u8 mgm_level;
+u8  mgm_level;
+u8  m_menubg;
+extern u32 m_rndState;
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -37,16 +39,61 @@ u8 mgm_level;
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
+void GM_dummy_init() __naked {
+   __asm
+   _m_rndState:: 
+      .dw 0x8a63, 0x7bf1
+   __endasm;
+}
 
 ///////////////////////////////////////////////////////////////
-/// GM_initialize
-///   Initializes the game manager object
+/// getRand
+///   Returns a random number from 0 to 255
 ///////////////////////////////////////////////////////////////
-void GM_initialize() {
+u8 getRand() {
+   m_rndState = cpct_nextRandom_mxor_u8 (m_rndState);
+   return m_rndState;
+}
+
+///////////////////////////////////////////////////////////////
+/// GM_startgame
+///   Initializes a new game
+///////////////////////////////////////////////////////////////
+void GM_startgame() {
    // Initialize entity manager and create hero
    LM_initialize(0);
    hero = EM_createEntity(10, 95, E_Princess);
    mgm_level = 0;
+}
+
+///////////////////////////////////////////////////////////////
+/// GM_startmenu
+///   Initializes the menu
+///////////////////////////////////////////////////////////////
+void GM_startmenu () {
+   LM_initialize(getRand() & 1);
+   LM_draw();
+
+   while (1) {
+      u16 c = 1000;  // 20 secs
+
+      LM_setOffset(getRand());
+      LM_drawBg(SM_scrBuf());
+
+      cpct_drawStringM0 ("CODE PRINCESS"
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 14, 70)
+                        ,  getRand() & 0x07 + 2, 1);
+
+      cpct_drawStringM0 ("ANY KEY TO START"
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 10, 140)
+                        ,  getRand() & 0x07 + 2, 10);
+
+      while (--c) {
+         if (cpct_isAnyKeyPressed())
+            return;
+         cpct_waitVSYNC();
+      }
+   }
 }
 
 ///////////////////////////////////////////////////////////////

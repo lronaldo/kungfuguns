@@ -58,6 +58,7 @@ PALETTE={8 0 18 22 1 2 3 20 6 17 24 15 9 4 13 26}
 $(eval $(call IMG2SPRITES,assets/princess.png,0,g,12,28,$(PALETTE),,src/sprites/,hwpalette))
 $(eval $(call IMG2SPRITES,assets/agent0.png,0,g,12,28,$(PALETTE),,src/sprites/))
 $(eval $(call IMG2SPRITES,assets/hit.png,0,g,8,14,$(PALETTE),,src/sprites/))
+$(eval $(call IMG2SPRITES,assets/scorepiece.png,0,g,32,36,$(PALETTE),,src/sprites/))
 $(eval $(call IMG2SPRITES,assets/tileset0.png,0,g,4,4,$(PALETTE),,src/tiles/))
 $(eval $(call IMG2SPRITES,assets/tileset1.png,0,g,4,4,$(PALETTE),,src/tiles/))
 $(eval $(call IMG2SPRITES,assets/tileset2.png,0,g,4,4,$(PALETTE),,src/tiles/))
