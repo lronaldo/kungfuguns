@@ -20,6 +20,23 @@ You can control your character with ARROW KEYS + SPACE
 
 Load the game on your Amstrad CPC by typing RUN"kfguns
 
+## COMPILING FROM SOURCES
+
+Follow these steps if you wanted to generate binaries, DSK and CDT files from sources:
+
+1. Clone [CPCtelera](https://github.com/lronaldo/cpctelera/) and switch to most recent branch autoaks
+  * `git clone https://github.com/lronaldo/cpctelera/`
+  * `git checkout autoaks`
+2. Install [CPCtelera](https://github.com/lronaldo/cpctelera/)
+  * `cd cpctelera`
+  * `./setup.sh`
+3. Close and reopen your terminal to force configuration reload 
+4. Download/Clone [kungfuguns](https://github.com/lronaldo/kungfuguns/) project
+  * `git clone https://github.com/lronaldo/kungfuguns/`
+5. Enter kungfuguns folder and run `make`
+  * `cd kungfuguns`
+  * `make`
+
 ## CREDITS
 
 **KUNG FU GUNS**
