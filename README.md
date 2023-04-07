@@ -24,12 +24,13 @@ Load the game on your Amstrad CPC by typing RUN"kfguns
 
 Follow these steps if you wanted to generate binaries, DSK and CDT files from sources:
 
-1. Clone [CPCtelera](https://github.com/lronaldo/cpctelera/) and switch to most recent branch autoaks
+1. Clone [CPCtelera](https://github.com/lronaldo/cpctelera/) and switch to most recent branch development
   * `git clone https://github.com/lronaldo/cpctelera/`
-  * `git checkout autoaks`
+  * `git checkout development`
 2. Install [CPCtelera](https://github.com/lronaldo/cpctelera/)
   * `cd cpctelera`
   * `./setup.sh`
+  * Note: You may need to install a Linux/Cygwin distribution and required dependencies.
 3. Close and reopen your terminal to force configuration reload 
 4. Download/Clone [kungfuguns](https://github.com/lronaldo/kungfuguns/) project
   * `git clone https://github.com/lronaldo/kungfuguns/`

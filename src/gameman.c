@@ -1,5 +1,5 @@
 //-----------------------------LICENSE NOTICE------------------------------------
-//  This file is part of CodePrincess: A CPCtelera game made for #bitbitjam3
+//  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
 //  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "levelman.h"
 #include "screenman.h"
 #include "scoreman.h"
+#include "utils.h"
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
@@ -74,27 +75,36 @@ void GM_startgame() {
 ///   Initializes the menu
 ///////////////////////////////////////////////////////////////
 void GM_startmenu () {
+   // Compile-time constants
+   enum {
+      syncs       = 4,
+      secs        = 15,
+      intspersec  = 300,
+      num_loops   = (secs * intspersec) / syncs
+   };
+
    LM_initialize(getRand() & 1);
    LM_draw();
 
    while (1) {
-      u16 c = 1000;  // 20 secs
+      u16 c = num_loops;
+      TWaitStatuses st = WS_Wait;
 
       LM_setOffset(getRand());
       LM_drawBg(SM_scrBuf());
 
+      cpct_setDrawCharM0( 15, 1 );
       cpct_drawStringM0 ("KUNG FU GUNS"
-                        ,  cpctm_screenPtr(CPCT_VMEM_START, 13, 70)
-                        ,  15, 1);
-
-      cpct_drawStringM0 ("PRESS ANY KEY"
-                        ,  cpctm_screenPtr(CPCT_VMEM_START, 12, 140)
-                        ,  getRand() & 0x07 + 2, 10);
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 13, 70));
 
       while (--c) {
-         if (cpct_isAnyKeyPressed())
+         cpct_setDrawCharM0( getRand() & 0x07 + 2, 10);
+         cpct_drawStringM0 ("PRESS ANY KEY"
+                           ,  cpctm_screenPtr(CPCT_VMEM_START, 12, 140));
+         st = wait4newKeyPressed(st);
+         if ( st == WS_NewKeyPressed )
             return;
-         cpct_waitVSYNC();
+         waitNVSyncs(syncs);
       }
    }
 }
@@ -104,15 +114,25 @@ void GM_startmenu () {
 ///   Initializes the menu
 ///////////////////////////////////////////////////////////////
 void GM_gameOver() {
-   u16 c = 1500;  // 30 secs
+   // Compile-time constants
+   enum {
+      syncs       = 3,
+      secs        = 10,
+      intspersec  = 300,
+      num_loops   = (secs * intspersec) / syncs
+   };
+
+   u16 c = num_loops;
+   TWaitStatuses st = WS_Wait;
 
    while (--c) {
+      cpct_setDrawCharM0( c & 0x0F, 1);
       cpct_drawStringM0 ("GAME OVER"
-                        ,  cpctm_screenPtr(CPCT_VMEM_START, 20, 70)
-                        ,  c & 0x0F, 1);
-      if (cpct_isAnyKeyPressed())
+                        ,  cpctm_screenPtr(CPCT_VMEM_START, 20, 70));
+      st = wait4newKeyPressed(st);
+      if (st == WS_NewKeyPressed)
          return;
-      cpct_waitVSYNC();
+      waitNVSyncs(syncs);
    }
 }
 

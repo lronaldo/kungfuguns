@@ -1,5 +1,5 @@
 //-----------------------------LICENSE NOTICE------------------------------------
-//  This file is part of CodePrincess: A CPCtelera game made for #bitbitjam3
+//  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
 //  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
-
 #include <cpctelera.h>
 
 ///////////////////////////////////////////////////////////////

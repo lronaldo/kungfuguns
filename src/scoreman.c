@@ -1,5 +1,5 @@
 //-----------------------------LICENSE NOTICE------------------------------------
-//  This file is part of CodePrincess: A CPCtelera game made for #bitbitjam3
+//  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
 //  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,6 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
-
 #include <cpctelera.h>
 #include <stdio.h>
 #include "scoreman.h"
@@ -172,8 +171,9 @@ void CM_updateLife_draw() {
 ///   Updates points drawing two strings
 ///////////////////////////////////////////////////////////////
 void CM_updatePoints_draw() {
-   cpct_drawStringM0(mcm_str_points, cpctm_screenPtr(CPCT_VMEM_START, 30, 24), 7, 5);
-   cpct_drawStringM0(mcm_str_points, cpctm_screenPtr(         0x8000, 30, 24), 7, 5); 
+   cpct_setDrawCharM0(7, 5);
+   cpct_drawStringM0(mcm_str_points, cpctm_screenPtr(CPCT_VMEM_START, 30, 24));
+   cpct_drawStringM0(mcm_str_points, cpctm_screenPtr(         0x8000, 30, 24));
 }
 
 ///////////////////////////////////////////////////////////////

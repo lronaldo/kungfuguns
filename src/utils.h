@@ -1,6 +1,6 @@
 //-----------------------------LICENSE NOTICE------------------------------------
 //  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
-//  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
+//  Copyright (C) 2023 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU Lesser General Public License as published by
@@ -15,16 +15,18 @@
 //  You should have received a copy of the GNU Lesser General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //------------------------------------------------------------------------------
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
 #include <types.h>
 
-///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-/// EXPORTED PUBLIC FUNCTIONS
-///////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////
-void GM_startmenu();
-void GM_startgame();
-void GM_gameOver();
-u8   GM_update();
-void GM_draw();
+typedef enum {
+   WS_Wait = 0,
+   WS_NoKeyIsPressed = 1,
+   WS_NewKeyPressed = 2
+} TWaitStatuses;
+
+void           waitNVSyncs(u8 n) __z88dk_fastcall;
+TWaitStatuses  wait4newKeyPressed(TWaitStatuses const status) __z88dk_fastcall;
+
+#endif

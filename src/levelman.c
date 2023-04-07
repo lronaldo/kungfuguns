@@ -1,5 +1,5 @@
 //-----------------------------LICENSE NOTICE------------------------------------
-//  This file is part of CodePrincess: A CPCtelera game made for #bitbitjam3
+//  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
 //  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -156,7 +156,7 @@ void fillBg(u8* bg, u16 idx) {
 ///   Draws the background completely
 ///////////////////////////////////////////////////////////////
 void LM_drawBg(u8 *buf) {
-   u8    *scr = buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START);
+   u8    *scr = buf + ((u8*)cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START);
    u8       i = 2;
 
    while (i) {
@@ -176,7 +176,7 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
    // Check if I'm ocluding the wall
    if (y < 108) {
       // General calculations
-      u8 tx1, tx2, tw1 = 0, tw2 = 0;
+      u8 tx1 = 0, tx2 = 0, tw1 = 0, tw2 = 0;
       u8 ty   = (y - 40) >> 2;
       u8 tw   = (w >> 1) + (x & 1);
       h_up    = 108 - y;
@@ -202,13 +202,13 @@ void LM_redrawBackgroundBox(u8 x, u8 y, u8 w, u8 h, u8* buf) {
       if (tw1) {
          cpct_etm_setTileset2x4 (m_bgTilPtr[0]);
          cpct_etm_drawTileBox2x4(tx1, ty, tw1, h_up, 20
-                                 , buf + (cpctm_screenPtr(CPCT_VMEM_START, 0, 40) - CPCT_VMEM_START)
+                                 , buf + ((u8*)cpctm_screenPtr(CPCT_VMEM_START, 0, 40) - CPCT_VMEM_START)
                                  , m_bgMapPtr[0]);
       }
       if (tw2) {
          cpct_etm_setTileset2x4 (m_bgTilPtr[1]);
          cpct_etm_drawTileBox2x4(tx2, ty, tw2, h_up, 20
-                                 , buf + (cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START)
+                                 , buf + ((u8*)cpctm_screenPtr(CPCT_VMEM_START, 40, 40) - CPCT_VMEM_START)
                                  , m_bgMapPtr[1]);
 
       }
@@ -326,7 +326,7 @@ void LM_draw() {
    // Redraw floor when required
    if (m_levelStatus & LS_RedrawFloor) {
       u8     i = 4;
-      u8** scr = memplaces;
+      u8** scr = (void*)memplaces;
       while (i) {
          cpct_drawSolidBox(*scr, m_level->floorcolor, 40, 92);
          --i; ++scr;

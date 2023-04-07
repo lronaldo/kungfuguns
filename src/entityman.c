@@ -1,5 +1,5 @@
 //-----------------------------LICENSE NOTICE------------------------------------
-//  This file is part of CodePrincess: A CPCtelera game made for #bitbitjam3
+//  This file is part of Kung Fu Guns: A CPCtelera game made for #bitbitjam3
 //  Copyright (C) 2016 ronaldo / Fremos / Cheesetea / ByteRealms (@FranGallegoBR)
 //
 //  This program is free software: you can redistribute it and/or modify
@@ -358,7 +358,7 @@ TEntity* EM_createEntity(u8 x, u8 y, u8 entityID) {
    
    // Allocate only if there is space left
    if (m_nEnt < MAX_ENTITIES - 1) {
-      void *fsm;
+      void *fsm = 0;
       TPoint *p;
 
       // Get next entity slot
