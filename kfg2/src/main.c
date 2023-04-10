@@ -1,8 +1,7 @@
 #include <cpctelera.h>
 #include <assets/g_palette.h>
 #include <assets/princess.h>
-
-#define SCR_PTR_U16(VMEM,X,Y) (u16)((VMEM) + 80 * ((u16)((Y) >> 3)) + 2048 * ((Y) & 7) + (X))
+#include "utils.h"
 
 void init() {
    cpct_disableFirmware();
@@ -12,13 +11,10 @@ void init() {
 }
 
 void game() {
-   enum {
-      p_string = SCR_PTR_U16(0xC000,  0,  96),
-      p_princ  = SCR_PTR_U16(0xC000, 38, 140)
-   };
-   cpct_setDrawCharM0(1, 0);
-   cpct_drawStringM0("Welcome to CPCtelera!", (void*)p_string);
-   cpct_drawSprite(sp_princess_0, (void*)p_princ, SP_PRINCESS_0_W, SP_PRINCESS_0_H);
+   u8* const p_string = cpctm_screenPtr(0xC000,  0,  96); 
+   u8* const p_princ  = cpctm_screenPtr(0xC000, 38, 140);
+
+   cpct_drawSprite(sp_princess_0, p_princ, SP_PRINCESS_0_W, SP_PRINCESS_0_H);
 
    while (1);
 }
