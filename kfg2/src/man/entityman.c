@@ -1,4 +1,5 @@
 #include "entityman.h"
+#include <utils.h>
 #include <cpctelera.h>
 
 ///----------------------------------------------------------------------------
@@ -9,7 +10,11 @@
 Entity_t entities_[EM_MaxEntities]; // Entity Space
 Entity_t const * const entities_end = entities_ + EM_MaxEntities;
 Entity_t const entity_template_ = {
-   .cmps = EM_DEFAULT_CMPS
+   .cmps = EM_DEFAULT_CMPS,
+   .x = 0, .y = 0,
+   .vx = 0, .vy = 0,
+   .w = 1, .h = 1,
+   .sprite = nullptr
 };
 
 ///----------------------------------------------------------------------------
@@ -19,14 +24,14 @@ Entity_t const entity_template_ = {
 ///----------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void man_entity_init() {
+void man_entity_init(void) {
    cpct_memset(entities_, 0, sizeof(entities_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 Entity_t* 
-man_entity_first_free() {
+man_entity_first_free(void) {
    Entity_t* e = entities_;
    while(e->cmps != EM_FREE_ENTITY) 
       ++e;
@@ -36,7 +41,7 @@ man_entity_first_free() {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 Entity_t*
-man_entity_create() {
+man_entity_create(void) {
    Entity_t* e = man_entity_first_free();
    cpct_memcpy(e, &entity_template_, sizeof(Entity_t));
    return e;
@@ -49,6 +54,18 @@ man_entity_forall(EntityFuncPtr const Process) __z88dk_fastcall {
    Entity_t* e = entities_;
    while(e < entities_end) {
       if (e->cmps != EM_FREE_ENTITY)
+         Process(e);
+      ++e;
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void
+man_entity_foreach(EntityFuncPtr const Process, u8 const cmps) {
+   Entity_t* e = entities_;
+   while(e < entities_end) {
+      if (e->cmps && cmps == cmps)
          Process(e);
       ++e;
    }

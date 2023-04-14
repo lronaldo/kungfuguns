@@ -2,6 +2,9 @@
 #include <assets/g_palette.h>
 #include <assets/princess.h>
 #include "utils.h"
+#include <sys/rendersys.h>
+#include <sys/physicssys.h>
+#include <man/entityman.h>
 
 void init() {
    cpct_disableFirmware();
@@ -10,13 +13,28 @@ void init() {
    cpct_setBorder(HW_LIME);
 }
 
+Entity_t const player_tmpl = {
+   .cmps = (EM_CMP_ALIVE_MASK | EM_CMP_INPUT_MASK | EM_CMP_PHYSICS_MASK),
+   .x = 10, .y = 10,
+   .vx = 1, .vy = 0,
+   .w = SP_PRINCESS_0_W,
+   .h = SP_PRINCESS_0_H,
+   .sprite = sp_princess_0
+};
+
 void game() {
-   u8* const p_string = cpctm_screenPtr(0xC000,  0,  96); 
-   u8* const p_princ  = cpctm_screenPtr(0xC000, 38, 140);
+   man_entity_init();
 
-   cpct_drawSprite(sp_princess_0, p_princ, SP_PRINCESS_0_W, SP_PRINCESS_0_H);
+   {  Entity_t* player = man_entity_create();
+      cpct_memcpy(player, &player_tmpl, sizeof(Entity_t));
+   }
 
-   while (1);
+   while (1) {
+      sys_render_update();
+      sys_physics_update();
+
+      cpct_waitVSYNCStart();
+   }
 }
 
 void main(void) {
