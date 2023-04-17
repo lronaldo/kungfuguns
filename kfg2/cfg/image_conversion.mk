@@ -10,4 +10,5 @@ $(eval $(call IMG2SP, SET_PALETTE_FW  , $(PALETTE) ))
 $(eval $(call IMG2SP, SET_FOLDER      , src/assets))
 $(eval $(call IMG2SP, CONVERT_PALETTE , $(PALETTE), g_palette ))
 $(eval $(call IMG2SP, CONVERT         , assets/princess.png, 12, 28, sp_princess))
+$(eval $(call IMG2SP, CONVERT         , assets/agent1.png, 12, 28, sp_enemy_china))
 
