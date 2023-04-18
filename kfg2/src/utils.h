@@ -2,7 +2,9 @@
 
 // Compile time constants
 enum {
-   nullptr = 0x0000
+      nullptr  = 0x0000
+   ,  false    = 0
+   ,  true     = 1
 };
 
 // Screen pointer calculation, compile time version (for enums)

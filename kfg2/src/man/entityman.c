@@ -22,6 +22,14 @@ Entity_t const entity_template_ = {
 /// FUNCTIONS
 ///----------------------------------------------------------------------------
 ///----------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+Entity_t* 
+man_entity_getByID(u8 const id) __z88dk_fastcall {
+   return entities_ + id;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void man_entity_init(void) {
@@ -33,7 +41,7 @@ void man_entity_init(void) {
 Entity_t* 
 man_entity_first_free(void) {
    Entity_t* e = entities_;
-   while(e->cmps != EM_FREE_ENTITY) 
+   while( IS_VALID_ENTITY(e) )
       ++e;
    return e;
 }
@@ -53,7 +61,7 @@ void
 man_entity_forall(EntityFuncPtr const Process) __z88dk_fastcall {
    Entity_t* e = entities_;
    while(e < entities_end) {
-      if (e->cmps != EM_FREE_ENTITY)
+      if ( IS_VALID_ENTITY(e) )
          Process(e);
       ++e;
    }
@@ -65,7 +73,7 @@ void
 man_entity_foreach(EntityFuncPtr const Process, u8 const cmps) {
    Entity_t* e = entities_;
    while(e < entities_end) {
-      if (e->cmps && cmps == cmps)
+      if ( HAS_COMPONENTS_PTR(e, cmps) )
          Process(e);
       ++e;
    }

@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <sys/rendersys.h>
 #include <sys/physicssys.h>
+#include <sys/inputsys.h>
 #include <man/levelman.h>
 
 void init() {
@@ -18,6 +19,7 @@ void game() {
 
    while (1) {
       sys_render_update();
+      sys_input_update();
       sys_physics_update();
 
       cpct_waitVSYNCStart();
