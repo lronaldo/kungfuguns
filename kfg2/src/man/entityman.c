@@ -9,13 +9,6 @@
 ///----------------------------------------------------------------------------
 Entity_t entities_[EM_MaxEntities]; // Entity Space
 Entity_t const * const entities_end = entities_ + EM_MaxEntities;
-Entity_t const entity_template_ = {
-   .cmps = EM_DEFAULT_CMPS,
-   .x = 0, .y = 0,
-   .vx = 0, .vy = 0,
-   .w = 1, .h = 1,
-   .sprite = nullptr
-};
 
 ///----------------------------------------------------------------------------
 ///----------------------------------------------------------------------------
@@ -49,16 +42,16 @@ man_entity_first_free(void) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 Entity_t*
-man_entity_create(void) {
+man_entity_create(Entity_t const * const e_template) __z88dk_fastcall {
    Entity_t* e = man_entity_first_free();
-   cpct_memcpy(e, &entity_template_, sizeof(Entity_t));
+   cpct_memcpy(e, e_template, sizeof(Entity_t));
    return e;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void
-man_entity_forall(EntityFuncPtr const Process) __z88dk_fastcall {
+man_entity_forall(EntityFunPtr const Process) __z88dk_fastcall {
    Entity_t* e = entities_;
    while(e < entities_end) {
       if ( IS_VALID_ENTITY(e) )
@@ -70,7 +63,7 @@ man_entity_forall(EntityFuncPtr const Process) __z88dk_fastcall {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void
-man_entity_foreach(EntityFuncPtr const Process, u8 const cmps) {
+man_entity_foreach(EntityFunPtr const Process, u8 const cmps) {
    Entity_t* e = entities_;
    while(e < entities_end) {
       if ( HAS_COMPONENTS_PTR(e, cmps) )

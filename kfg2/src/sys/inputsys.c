@@ -34,7 +34,7 @@ KeyAction_t const keytable[] = {
    ,  { Key_Q     , act_up    }
    ,  { Key_A     , act_down  }
    ,  { Key_Space , act_fire  }
-   ,  { nullptr   , (void*)nullptr }
+   ,  { NULL      , nullptr   }
 };
 
 ///----------------------------------------------------------------------------
