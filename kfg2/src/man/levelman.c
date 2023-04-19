@@ -18,7 +18,7 @@ Entity_t const player_tmpl = {
    .sprite = sp_princess_0
 };
 Entity_t const enemy_tmpl = {
-   .cmps = (EM_CMP_ALIVE_MASK | EM_CMP_AI_MASK | EM_CMP_PHYSICS_MASK),
+   .cmps = (EM_CMP_ALIVE_MASK | EM_CMP_BEH_MASK | EM_CMP_PHYSICS_MASK),
    .x = 70, .y = 10,
    .vx = -1, .vy = 0,
    .w = SP_ENEMY_CHINA_0_W,

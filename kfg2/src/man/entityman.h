@@ -24,7 +24,7 @@ enum {
    , EM_CMP_ALIVE_MASK  = 0x01   // Mask for Component that signals if an entity is alive or not
    , EM_CMP_INPUT_MASK  = 0x02   // Mask for Input Component
    , EM_CMP_PHYSICS_MASK= 0x04   // Mask for Physics Component
-   , EM_CMP_AI_MASK     = 0x08   // Mask for AI Component
+   , EM_CMP_BEH_MASK    = 0x08   // Mask for Behaviour Component
 };
 
 ///< Pointer to entity processing function

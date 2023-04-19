@@ -4,8 +4,11 @@
 #include <utils.h>
 
 // Forward function declarations
-static void act_left(Entity_t * const);
+static void act_left (Entity_t * const);
 static void act_right(Entity_t * const);
+static void act_up   (Entity_t * const);
+static void act_down (Entity_t * const);
+static void act_fire (Entity_t * const);
 
 ///----------------------------------------------------------------------------
 ///----------------------------------------------------------------------------
@@ -26,9 +29,12 @@ typedef struct {
 
 ///< Possible keys the user can press and their associated actions
 KeyAction_t const keytable[] = {
-      { Key_O  , act_left  }
-   ,  { Key_P  , act_right }
-   ,  { nullptr, (void*)nullptr }
+      { Key_O     , act_left  }
+   ,  { Key_P     , act_right }
+   ,  { Key_Q     , act_up    }
+   ,  { Key_A     , act_down  }
+   ,  { Key_Space , act_fire  }
+   ,  { nullptr   , (void*)nullptr }
 };
 
 ///----------------------------------------------------------------------------
@@ -41,6 +47,9 @@ KeyAction_t const keytable[] = {
 ///////////////////////////////////////////////////////////////////////////////
 static void act_left (Entity_t * const e) { e->vx = -1; }
 static void act_right(Entity_t * const e) { e->vx = +1; }
+static void act_up   (Entity_t * const e) { e->vy = -1; }
+static void act_down (Entity_t * const e) { e->vy = +1; }
+static void act_fire (Entity_t * const e) { e; }
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
