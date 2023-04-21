@@ -1,5 +1,7 @@
 #pragma once
 
+typedef unsigned char bool;
+
 // Compile time constants
 enum {
       NULL     = 0x0000

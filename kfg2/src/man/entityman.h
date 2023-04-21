@@ -1,5 +1,6 @@
 #pragma once
 #include <types.h>
+#include <utils.h>
 
 ///===========================================================================
 ///============================================================================
@@ -14,17 +15,18 @@ struct Entity_t;
 typedef void(*EntityFunPtr)(struct Entity_t * const);
 
 ///< Pointer to entity processing function
-typedef void(*BehaviourFunPtr)(struct Entity_t * const);
+typedef bool(*BehaviourFunPtr)(struct Entity_t * const);
 
 ///< Entity Structure
 typedef struct Entity_t {
-   u8 cmps;             // Components
-   u8 x, y;             // Screen coords
-   u8 w, h;             // Sprite Size
-   i8 vx, vy;           // Movement velocity
-   void const* sprite;  // Sprite
-   BehaviourFunPtr beh; // Pointer to a behaviour function
-   u8 behdata[4];       // Behaviour data (bytes for different uses depending on behaviours)
+   u8 cmps;                // Components
+   u8 x, y;                // Screen coords
+   u8 w, h;                // Sprite Size
+   i8 vx, vy;              // Movement velocity
+   void const* sprite;     // Sprite
+   BehaviourFunPtr beh;    // Pointer to a behaviour function
+   BehaviourFunPtr behfbk; // Behaviour fallback function (return after current behaviour finishes)
+   u8 behdata[4];          // Behaviour data (bytes for different uses depending on behaviours)
 } Entity_t;
 
 ///< Compile-time constants
