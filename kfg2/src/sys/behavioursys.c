@@ -12,8 +12,9 @@
 
 ///< Behaviour compile-time constants
 enum {
-      BDATA_TargetX = 0 // Behdata Byte 0 used for TargetX value (Move-To)
-   ,  BDATA_TargetY = 1 // Behdata Byte 1 used for TargetY value (Move-To)
+      BDATA_TargetX = 0  // Behdata Byte 0 used for TargetX value (Move-To)
+   ,  BDATA_TargetY = 1  // Behdata Byte 1 used for TargetY value (Move-To)
+   ,  BDATA_ArrRange = 2 // Behdata Byte 2 used for Arrival Range value (Move-To)
 };
 
 ///< Macro for accessing Behaviour Data
@@ -32,16 +33,32 @@ sys_beh_bnull(Entity_t * const e) { e; return false; }
 
 /////////////////////////////////////////////////////////////////////////////// 
 ///////////////////////////////////////////////////////////////////////////////
+i8 clamp(i8 const v, i8 const min, i8 const max) {
+   if (v < min) return min; 
+   if (v > max) return max;
+   return v;
+}
+
+bool inrange(i8 const v, i8 const min, i8 const max) {
+   return v >= min && v <= max;
+}
+
 bool
 sys_beh_bmove_to(Entity_t * const e) {
-   i8 VX = e->x - BEHDATA(e, TargetX);
-   i8 VY = e->y - BEHDATA(e, TargetY);
-   if (VX < 0) VX = 1; else if (VX > 0) VX = -1;
-   if (VY < 0) VY = 1; else if (VY > 0) VY = -1;
-   e->vx = VX;
-   e->vy = VY;
+   i8 const dx = BEHDATA(e, TargetX) - e->x;
+   i8 const dy = BEHDATA(e, TargetY) - e->y;
+   i8 const range = BEHDATA(e, ArrRange);
 
-   return (VX == 0 && VY == 0);
+   e->vx = 0;
+   if ( ! inrange(dx, -range, range) ) {
+      e->vx = clamp(dx, -1, 1);
+   } 
+   e->vy = 0;
+   if ( ! inrange(dy, -range, range) ) {
+      e->vy = clamp(dy, -1, 1);
+   } 
+
+   return (e->vx == 0 && e->vy == 0);
 }
 
 /////////////////////////////////////////////////////////////////////////////// 
@@ -69,10 +86,12 @@ sys_beh_benemy_basic(Entity_t * const e) {
 ///////////////////////////////////////////////////////////////////////////////
 static void
 execute_behaviours(Entity_t * const e) { 
-   *((u8*)0xC000) = 0;
-   if ( e->beh(e) ) {
-      *((u8*)0xC000) = 0xFF;
-      e->behfbk(e);  // Fallback executed when behaviour finishes
+   e->behticks -= 1;
+   if ( e->behticks == 0 ) {
+      if ( e->beh(e) ) {
+         e->behfbk(e);  // Fallback executed when behaviour finishes
+      }
+      e->behticks = e->behcycles;
    }
 }
 

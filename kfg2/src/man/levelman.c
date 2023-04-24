@@ -20,6 +20,8 @@ Entity_t const player_tmpl = {
    ,  .sprite  = sp_princess_0
    ,  .beh     = nullptr
    ,  .behfbk  = nullptr
+   ,  .behcycles = 0
+   ,  .behticks = 0
    ,  .behdata = { 0, 0, 0, 0 }
 };
 Entity_t const enemy_tmpl = {
@@ -31,7 +33,9 @@ Entity_t const enemy_tmpl = {
    ,  .sprite  = sp_enemy_china_0
    ,  .beh     = sys_beh_benemy_basic
    ,  .behfbk  = sys_beh_benemy_basic
-   ,  .behdata = { 10, 50, 0, 0 }
+   ,  .behcycles = 5
+   ,  .behticks = 1
+   ,  .behdata = { 10, 50, 2, 0 }
 };
 Entity_t* player_;
 

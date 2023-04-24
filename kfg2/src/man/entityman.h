@@ -26,6 +26,8 @@ typedef struct Entity_t {
    void const* sprite;     // Sprite
    BehaviourFunPtr beh;    // Pointer to a behaviour function
    BehaviourFunPtr behfbk; // Behaviour fallback function (return after current behaviour finishes)
+   u8 behcycles;           // Number of gameloop cycles cooldown between behaviour executions
+   u8 behticks;            // Behaviour ticks remaining for next execution of the behaviour
    u8 behdata[4];          // Behaviour data (bytes for different uses depending on behaviours)
 } Entity_t;
 
